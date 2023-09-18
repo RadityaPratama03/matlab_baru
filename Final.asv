@@ -324,7 +324,7 @@ for i = 1:length(Data_t)
             %text(Xi, Yi, [type_i], 'Color', 'black', 'FontSize', 8);
         end
     end
-    legend('reachable','unreachable', 'RSU', 'Location', 'northwest');
+    legend('mobil&taxi', 'RSU', 'Location', 'northwest');
     %legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
     % Data x dan y dalam matriks "data"
