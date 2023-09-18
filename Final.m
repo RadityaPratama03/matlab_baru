@@ -23,11 +23,11 @@ B6 = 30;
 
 %B5 = 40; % Bandwidth yang digunakan pada dalam satuan MHz
 %B6 = 80; % Bandwidth yang digunakan pada dalam satuan MHz
-start1 = 11;
+start1 = 1;
 
 figure; % Membuat figure baru
 
-subplot(6, 1, 1);
+subplot(7, 1, 1);
 axis([-50 350 -40 120]);
 title('Jalur PKU');
 xlabel('Data x');
@@ -35,7 +35,7 @@ ylabel('Data y');
 grid on;
 hold on;
 
-subplot(6, 1, 2);
+subplot(7, 1, 2);
 axis([10 inf 18.671 inf]);
 title('Analisis Perbandingan 5G & 6G');
 xlabel('Jumlah kendaraan');
@@ -43,7 +43,7 @@ ylabel('decibel (dB)');
 grid on;
 hold on;
 
-subplot(6, 1, 3); % Subplot untuk menghitung delay
+subplot(7, 1, 3); % Subplot untuk menghitung delay
 %axis('auto');
 axis([10 inf 155.283 inf]);
 title('Delay Berdasarkan Jarak');
@@ -52,7 +52,7 @@ ylabel('Delay (ms)');
 grid on;
 hold on;
 
-subplot(6, 1, 4); % Subplot untuk menghitung throughput
+subplot(7, 1, 4); % Subplot untuk menghitung throughput
 %axis([10 inf 434 134]);
 axis('auto');
 title('Pengaruh Throughput');
@@ -61,7 +61,7 @@ ylabel('Throughput (Kbps)');
 grid on;
 hold on;
 
-subplot(6, 1, 5); % Subplot untuk menghitung reachable
+subplot(7, 1, 5); % Subplot untuk menghitung reachable
 %axis('auto');
 axis([10 inf 0 inf]);
 title('TraceCount Reachable');
@@ -70,9 +70,17 @@ ylabel('Duration (s)');
 grid on;
 hold on;
 
-subplot(6, 1, 6);
+subplot(7, 1, 6);
 axis([-50 350 -40 120]);
 title('Jalur PKU Reachable dan Unreachable');
+xlabel('Data x');
+ylabel('Data y');
+grid on;
+hold on;
+
+subplot(7, 1, 7);
+axis([-50 350 -40 120]);
+title('Jalur PKU Cluster');
 xlabel('Data x');
 ylabel('Data y');
 grid on;
@@ -94,7 +102,7 @@ traceCount = [];
 reachableDuration = [];
 
 for i = 1:length(Data_t)
-    subplot(6, 1, 1);
+    subplot(7, 1, 1);
     cla;
     idx = t == Data_t(i);
     xy_array = [xy_array; x(idx) y(idx)];
@@ -216,7 +224,7 @@ for i = 1:length(Data_t)
                 if strcmp(kondisi{k}, 'reachable')
                     reachableDuration(k) = reachableDuration(k-1) + 1;
                 else
-                    reachableDuration(k) = 0;
+                    reachableDuration(k) = reachableDuration(k-1) - 1;
                 end
             end
             traceCount(k) = k;
@@ -225,39 +233,39 @@ for i = 1:length(Data_t)
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
     % Plot untuk dB
-    subplot(6, 1, 2);
+    subplot(7, 1, 2);
     plot(Data_t(start1:i), dB_avg5(start1:i), '-', 'Color', 'red');
     hold on;
     plot(Data_t(start1:i), dB_avg6(start1:i), '-', 'Color', 'green');
     legend('5G','6G', 'Location', 'northwest');
 
     % Plot untuk Delay
-    subplot(6, 1, 3);
+    subplot(7, 1, 3);
     plot(Data_t(start1:i),delay_avg5(start1:i), '-', 'Color', 'red');
     hold on;
     plot(Data_t(start1:i),delay_avg6(start1:i), '-', 'Color', 'green');
     legend('5G','6G', 'Location', 'northwest');
     
     % Plot untuk Throughput
-    subplot(6, 1, 4);
+    subplot(7, 1, 4);
     plot(Data_t(start1:i),Throughput_avg5(start1:i), '-', 'Color', 'red');
     hold on;
     plot(Data_t(start1:i),Throughput_avg6(start1:i), '-', 'Color', 'green');
     legend('5G','6G','Location', 'northwest');
 
     % Plot untuk Duration
-    subplot(6, 1, 5);
+    subplot(7, 1, 5);
     plot(traceCount(start1:i),reachableDuration(start1:i), '-', 'Color', 'red');
     hold on;
     legend('mobil&taxi', 'Location', 'northwest');
    
     % Plot untuk Reachable dan Unreachable
-    subplot(6, 1, 6);
+    subplot(7, 1, 6);
     cla;
     plot(x(idx_mobil), y(idx_mobil), 'o', 'MarkerFaceColor', 'Green');
     hold on;
-    plot(x(idx_taxi), y(idx_taxi), 'o', 'MarkerFaceColor', 'Red');
-    hold on;
+    %plot(x(idx_taxi), y(idx_taxi), 'o', 'MarkerFaceColor', 'Red');
+    %hold on;
     text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left')
     hold on;
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
@@ -268,6 +276,8 @@ for i = 1:length(Data_t)
         idx_l = idx & strcmp(l, Data_l(j));
         x_l = x(idx_l);
         y_l = y(idx_l);
+        id_l = data.id(idx_l); % Kolom id dari data
+        type_l = data.type(idx_l); % Kolom type dari data
 
         % Menggambar garis yang menghubungkan titik terdekat
         for k = 1:length(x_l)-1
@@ -283,21 +293,82 @@ for i = 1:length(Data_t)
 
             % Menggambar garis dengan warna yang sesuai
             line1 = plot([x_l(k), x_l(k+1)], [y_l(k), y_l(k+1)], '--', 'Color', line_color);
-
-         for k = 1:length(x_l)
-            Xi = x_l(k);
-            Yi = y_l(k)
-            if Xi <= 300 && Xi >= 25 && Yi <= 300
-                text(Xi, Yi, ' rea ', 'Color', 'green');
-            else
-                text(Xi, Yi, ' unr ', 'Color', 'red');
-            end 
-         end
         end
 
         % Menghitung jarak antara titik dengan RSU
         distance_to_rsu = sqrt((x_l - rsu_x).^2 + (y_l - rsu_y).^2);
         idx_rsu = distance_to_rsu <= 30;
+
+        % Menghitung jarak antara titik dengan RSU dan overwrite data
+        distance_to_rsu = sqrt((x - rsu_x).^2 + (y - rsu_y).^2);
+        data.Distance_to_RSU = distance_to_rsu;
+
+        % Menggambar garis yang menghubungkan titik dengan RSU
+        for k = 1:length(x_l(idx_rsu))
+            line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
+        end
+        
+        % Memberikan warna pada mobil & taxi ketika jarak >= 300
+        for k = 1:size(x_l)
+            Xi = x_l(k);
+            Yi = y_l(k);
+            id_i = id_l(k); % Id kendaraan
+            type_i = type_l{k}; % Type kendaraan
+            if Xi <= 300 && sqrt((Xi - rsu_x).^2 + (Yi - rsu_y).^2) <= 30
+                node_color = 'Green';
+            elseif Yi <= 300 
+                node_color = 'Red';
+            end
+            plot(Xi, Yi, 'o', 'MarkerFaceColor', node_color);
+            %text(Xi, Yi, [' ' id_i ,  type_i], 'Color', 'black', 'FontSize', 8);
+            %text(Xi, Yi, [type_i], 'Color', 'black', 'FontSize', 8);
+        end
+    end
+    legend('mobil&taxi', 'RSU', 'Location', 'northwest');
+    %legend('mobil','taxi', 'RSU', 'Location', 'northwest');
+
+    subplot(7, 1, 7);
+    cla;
+    plot(x(idx_mobil), y(idx_mobil), 'o', 'MarkerFaceColor', 'Green');
+    hold on;
+    plot(x(idx_taxi), y(idx_taxi), 'o', 'MarkerFaceColor', 'Red');
+    hold on;
+    text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left')
+    hold on;
+    plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
+    hold on;
+
+    % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
+    for j = 1:length(Data_l)
+        idx_l = idx & strcmp(l, Data_l(j));
+        x_l = x(idx_l);
+        y_l = y(idx_l);
+        id_l = data.id(idx_l); % Kolom id dari data
+        type_l = data.type(idx_l); % Kolom type dari data
+
+        % Menggambar garis yang menghubungkan titik terdekat
+        for k = 1:length(x_l)-1
+            % Menghitung jarak antara dua titik
+            distance2 = sqrt((x_l(k+1) - x_l(k))^2 + (y_l(k+1) - y_l(k))^2);
+
+            % Memilih warna berdasarkan jarak
+            if distance2 <= 30
+                line_color = 'green'; % Warna hijau untuk jarak <= 30 meter
+            elseif distance2 <= 50
+                line_color = 'red'; % Warna merah untuk jarak <= 50 meter
+            end
+
+            % Menggambar garis dengan warna yang sesuai
+            line1 = plot([x_l(k), x_l(k+1)], [y_l(k), y_l(k+1)], '--', 'Color', line_color);
+        end
+
+        % Menghitung jarak antara titik dengan RSU
+        distance_to_rsu = sqrt((x_l - rsu_x).^2 + (y_l - rsu_y).^2);
+        idx_rsu = distance_to_rsu <= 30;
+
+        % Menghitung jarak antara titik dengan RSU dan overwrite data
+        distance_to_rsu = sqrt((x - rsu_x).^2 + (y - rsu_y).^2);
+        data.Distance_to_RSU = distance_to_rsu;
 
         % Menggambar garis yang menghubungkan titik dengan RSU
         for k = 1:length(x_l(idx_rsu))
@@ -307,10 +378,6 @@ for i = 1:length(Data_t)
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
     pause(0.45);
-    
-    %excelObj = Time('Hsimulasicut.xlsx');
-    %excelObj.displayData();
-
 
     data.Kondisi = kondisi;
     %outputData = table2cell(data);
@@ -319,6 +386,41 @@ for i = 1:length(Data_t)
     %xlswrite(outputFile, outputData, sheet);
     %outputFilename = 'Hsimulasi_with_kondisi.xlsx';
     writetable(data, filename, 'Sheet', sheet, 'WriteVariableNames', true);
+
+    % Membuat objek V2V dan V2I
+    v2vConnection = V2VConnection(data);
+    v2iConnection = V2IConnection(data);
+
+    % Data x dan y dalam matriks "data"
+    x = data.x;
+    y = data.y;
+    
+    % Gabungkan data x dan y ke dalam matriks X
+    X = [x, y];
+    
+    % Jumlah cluster yang diinginkan
+    numClusters = 10; % Ganti dengan jumlah cluster yang Anda inginkan
+    
+    % Terapkan K-Means clustering
+    [idx, C] = kmeans(X, numClusters);
+
+    % Tambahkan kolom 'Cluster' ke dalam data
+    data.Cluster = idx;
+    
+    % Visualisasikan hasil clustering
+    %figure;
+    %gscatter(x, y, idx);
+    %title('Clustering Berdasarkan Data x dan y');
+    %xlabel('Data x');
+    %ylabel('Data y');
+    legend('Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5', 'Cluster 6', 'Cluster 7', 'Cluster 8', 'Cluster 9', 'Cluster 10'); % Sesuaikan dengan jumlah cluster yang Anda pilih
+    
+    % Plot pusat cluster (centroid)
+    %hold on;
+    %plot(C(:, 1), C(:, 2), 'kx', 'MarkerSize', 10, 'LineWidth', 2);
+    %legend('Cluster 1', 'Cluster 2', 'Cluster 3', 'Centroid');
+    %hold off;
+
     
 end
 hold off;
