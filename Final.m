@@ -335,7 +335,7 @@ for i = 1:length(Data_t)
     X = [x, y];
     
     % Jumlah cluster yang diinginkan
-    numClusters = 5; % Ganti dengan jumlah cluster yang Anda inginkan
+    numClusters = 5; 
     
     % Terapkan K-Means clustering
     [idx, C] = kmeans(X, numClusters);
@@ -348,7 +348,7 @@ for i = 1:length(Data_t)
     %cluster_symbols = {'o', 's', 'd', '^', 'v', '>', '<', 'p', 'h', '*'};
     %cluster_symbols = {'o', 's', 'd', '^', 'v'};
 
-    % Mendefinisikan palet warna sesuai dengan jumlah cluster
+    % Mendefinisikan warna sesuai dengan jumlah cluster
     colors = jet(numClusters);
     
     % Plot untuk Clustering
@@ -356,9 +356,9 @@ for i = 1:length(Data_t)
     cla;
     hold on;
     
-    % Plot ikon untuk setiap node berdasarkan cluster
+    % Plot ikon o untuk setiap node berdasarkan cluster
     for i = 1:numClusters
-        cluster_nodes = X(idx == i, :); % Pastikan cluster_nodes berisi data yang benar
+        cluster_nodes = X(idx == i, :);
         plot(cluster_nodes(:, 1), cluster_nodes(:, 2), 'o', 'MarkerFaceColor', colors(i, :), 'MarkerSize', 8);
     
         text(mean(cluster_nodes(:, 1)), mean(cluster_nodes(:, 2)), cluster_labels{i}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontWeight', 'bold');
@@ -407,7 +407,7 @@ for i = 1:length(Data_t)
         end
     end
     
-    % Menambahkan legenda untuk cluster
+    % Menambahkan legend untuk cluster
     legend_str = cell(1, numClusters);
     for i = 1:numClusters
         legend_str{i} = ['Cluster ' num2str(i)];
@@ -424,7 +424,7 @@ for i = 1:length(Data_t)
     %outputFilename = 'Hsimulasi_with_kondisi.xlsx';
     writetable(data, filename, 'Sheet', sheet, 'WriteVariableNames', true);
 
-    % Membuat objek V2V dan V2I
+    % Membuat objek Koneksi V2V dan V2I
     v2vConnection = V2VConnection(data);
     v2iConnection = V2IConnection(data);
         
