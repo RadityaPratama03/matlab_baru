@@ -344,8 +344,9 @@ for i = 1:length(Data_t)
     data.Cluster = idx;
 
     % Definisi simbol (ikon) untuk setiap cluster
-    %cluster_labels = {'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5', 'Cluster 6', 'Cluster 7', 'Cluster 8', 'Cluster 9', 'Cluster 10'};
-    cluster_labels = {'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5'};
+    %cluster_labels = {'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5'};
+    %cluster_symbols = {'o', 's', 'd', '^', 'v', '>', '<', 'p', 'h', '*'};
+    cluster_symbols = {'o', 's', 'd', '^', 'v'};
 
     % Mendefinisikan palet warna sesuai dengan jumlah cluster
     colors = jet(numClusters);
