@@ -344,9 +344,9 @@ for i = 1:length(Data_t)
     data.Cluster = idx;
 
     % Definisi simbol (ikon) untuk setiap cluster
-    %cluster_labels = {'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5'};
+    cluster_labels = {'Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5'};
     %cluster_symbols = {'o', 's', 'd', '^', 'v', '>', '<', 'p', 'h', '*'};
-    cluster_symbols = {'o', 's', 'd', '^', 'v'};
+    %cluster_symbols = {'o', 's', 'd', '^', 'v'};
 
     % Mendefinisikan palet warna sesuai dengan jumlah cluster
     colors = jet(numClusters);
@@ -358,8 +358,10 @@ for i = 1:length(Data_t)
     
     % Plot ikon untuk setiap node berdasarkan cluster
     for i = 1:numClusters
-        cluster_nodes = X(idx == i, :);
-        plot(cluster_nodes(:, 1), cluster_nodes(:, 2), cluster_symbols{i}, 'MarkerFaceColor', colors(i, :), 'MarkerSize', 8);
+        cluster_nodes = X(idx == i, :); % Pastikan cluster_nodes berisi data yang benar
+        plot(cluster_nodes(:, 1), cluster_nodes(:, 2), 'o', 'MarkerFaceColor', colors(i, :), 'MarkerSize', 8);
+    
+        text(mean(cluster_nodes(:, 1)), mean(cluster_nodes(:, 2)), cluster_labels{i}, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'bottom', 'FontWeight', 'bold');
     end
     
     % Plot RSU
