@@ -313,7 +313,7 @@ for i = 1:length(Data_t)
     title('Hasil Clustering K-Medoids (4 Cluster) dengan Data Sudut yang Dinormalisasi');
     
     % Menampilkan legenda
-    legend('RSU', 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
+    legend('RSU' 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
        
     pause(0.45);
 
