@@ -306,7 +306,8 @@ for i = 1:length(Data_t)
         scatter3(C(cluster, 1), C(cluster, 2), C(cluster, 3), 200, color, 'X', 'LineWidth', 2);
         hold on;
     end
-  
+
+    
     % Menambahkan label pada plot
     xlabel('Data x');
     ylabel('Data y');

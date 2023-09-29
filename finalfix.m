@@ -263,18 +263,18 @@ for i = 1:length(Data_t)
         end
     end
     
-    % Menambahkan data sudut (angle) dan normalisasi
+    % Menambahkan data angle dan normalisasi
     data_angle = a; 
     min_angle = min(data_angle);
     max_angle = max(data_angle);
     
-    % Normalisasi data sudut ke rentang yang sama dengan data x dan y
+    % Normalisasi data sudut 
     min_range = min(x); 
     max_range = max(x); 
     
     normalized_angle = min_range + ((data_angle - min_angle) / (max_angle - min_angle)) * (max_range - min_range);
     
-    % Menambahkan clustering K-Medoids menggunakan data x, y, dan sudut yang telah dinormalisasi
+    % Menambahkan clustering K-Medoids 
     data_xy_angle = [x(idx), y(idx), normalized_angle(idx)];
     k = 4; % Jumlah cluster yang diinginkan
     [idx_medoids, C, sumd, D] = kmedoids(data_xy_angle, k, 'Distance', 'euclidean');
@@ -284,24 +284,24 @@ for i = 1:length(Data_t)
         cluster_points = data_xy_angle(idx_medoids == cluster, :);
     
         if cluster == 1
-            marker = 'h'; % Bentuk hexagram
+            marker = 'h'; 
             color = 'blue';
         elseif cluster == 2
-            marker = 's'; % Bentuk kotak
+            marker = 's'; 
             color = 'red';
         elseif cluster == 3
-            marker = '^'; % Bentuk segitiga
+            marker = '^'; 
             color = 'green';
         else
-            marker = 'd'; % Bentuk diamond
+            marker = 'd'; 
             color = 'magenta';
         end
     
-        % Plot titik-titik yang termasuk dalam cluster
+        % Plot cluster
         scatter3(cluster_points(:, 1), cluster_points(:, 2), cluster_points(:, 3), 50, color, marker, 'filled');
         hold on;
     
-        % Plot medoid cluster dengan tanda bintang
+        % Plot medoid cluster 
         scatter3(C(cluster, 1), C(cluster, 2), C(cluster, 3), 200, color, 'X', 'LineWidth', 2);
         hold on;
     end
@@ -312,8 +312,8 @@ for i = 1:length(Data_t)
     zlabel('Normalized Angle');
     title('Hasil Clustering K-Medoids (4 Cluster) dengan Data Sudut yang Dinormalisasi');
     
-    % Menampilkan legenda
-    legend('RSU' 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
+    % Menampilkan legend
+    legend('RSU', 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
        
     pause(0.45);
 
