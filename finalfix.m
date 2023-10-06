@@ -8,6 +8,7 @@ y = data.y;
 l = data.lane;
 p = data.type;
 a = data.angle;
+s = data.speed;
 
 K = 30; % Konstanta berbeda setiap lingkungan
 
@@ -264,24 +265,37 @@ for i = 1:length(Data_t)
     end
     
     % Menambahkan data angle dan normalisasi
-    data_angle = a; 
+    data_angle = a; % Mengambil data angle 
+    % Menentukan rentang (range) dari data sudut yang akan digunakan dalam normalisasi
     min_angle = min(data_angle);
     max_angle = max(data_angle);
     
     % Normalisasi data sudut 
     min_range = min(x); 
     max_range = max(x); 
+    % Variable x untuk menyimpan data min_range max_range
     
-    normalized_angle = min_range + ((data_angle - min_angle) / (max_angle - min_angle)) * (max_range - min_range);
-    
+    normalized_angle = min_range + ((data_angle - min_angle) / (max_angle - min_angle)) * (max_range - min_range); 
+    % (data_angle - min_angle) akan menghasilkan data selisih data antara nilai angle 
+    % (max_angle - min_angle akan menghasilkan data angle yang max dengan min
+   
     % Menambahkan clustering K-Medoids 
-    data_xy_angle = [x(idx), y(idx), normalized_angle(idx)];
-    k = 4; % Jumlah cluster yang diinginkan
-    [idx_medoids, C, sumd, D] = kmedoids(data_xy_angle, k, 'Distance', 'euclidean');
+    data_xy_angle = [x(idx), y(idx), normalized_angle(idx)]; % Menggabungkan data x, data y, dan data angle yang sudah dinormalisasikan
+    
+    k = 4; % Jumlah cluster yang dipilih
+
+    [idx_medoids, C, sumd, D] = kmedoids(data_xy_angle, k, 'Distance', 'euclidean'); 
+
+    % [idx,C,sumd,D,midx] = kmedoids(___) dengan menggunakan syntax kmedoids, data dilakukan perhitungan dengan Euclidian Distance 
+    % idx_medoids yang berisi indeks cluster 
+    % C berisi medoid (titik pusat) dari masing-masing cluster
+    % sumd berisi k yang berisi total jarak (jarak Euclidean) dari masing-masing cluster
+    % D berisi matriks jarak antara setiap titik data dengan semua medoid dalam cluster
     
     % Menggambar hasil clustering dengan warna yang berbeda
     for cluster = 1:k
-        cluster_points = data_xy_angle(idx_medoids == cluster, :);
+        cluster_points = data_xy_angle(idx_medoids == cluster, :); % Menghitung cluster-cluster hasil dari proses k-medoids cluster
+        % cluster_points berisi data yang termasuk dalam cluster
     
         if cluster == 1
             marker = 'h'; 
@@ -296,12 +310,12 @@ for i = 1:length(Data_t)
             marker = 'd'; 
             color = 'magenta';
         end
-    
-        % Plot cluster
+        
+        % Menampilkan Plot cluster
         scatter3(cluster_points(:, 1), cluster_points(:, 2), cluster_points(:, 3), 50, color, marker, 'filled');
         hold on;
     
-        % Plot medoid cluster 
+        % Menampilkan Plot medoid cluster 
         scatter3(C(cluster, 1), C(cluster, 2), C(cluster, 3), 200, color, 'X', 'LineWidth', 2);
         hold on;
     end
@@ -313,8 +327,8 @@ for i = 1:length(Data_t)
     title('Hasil Clustering K-Medoids (4 Cluster) dengan Data Sudut yang Dinormalisasi');
     
     % Menampilkan legend
-    legend('RSU', 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
-       
+    legend('RSU', 'Cluster 1', 'Medoid 1', 'Cluster 2', 'Medoid 2', 'Cluster 3', 'Medoid 3', 'Cluster 4', 'Medoid 4', 'Location', 'northwest');
+      
     pause(0.45);
 
     data.Kondisi = kondisi;

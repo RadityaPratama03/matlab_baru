@@ -330,85 +330,15 @@ for i = 1:length(Data_t)
     % Plot untuk Clustering
     subplot(4, 1, 4);
     cla;
+cla;
+    
+    % Plot titik koordinat RSU 
+    rsu_x = 119.797421731123;
+    rsu_y = 50.2803738317757;
+    text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left')
+    plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
-
-    % Data x dan y dalam matriks "data"
-    x = data.x;
-    y = data.y;
-
-    % Jumlah cluster yang diinginkan
-    numClusters = 4; 
     
-    % Menambahkan clustering dua arah 
-    num_clusters_x = 4; 
-    num_clusters_y = 4; 
-    
-    % Melakukan K-Medoids clustering untuk dimensi x dan y
-    x_data = [x(idx_mobil); x(idx_taxi)];
-    y_data = [y(idx_mobil); y(idx_taxi)];
-    data_points = [x_data, y_data];
-    
-    % Melakukan K-Medoids clustering
-    [idx_clusters, C] = kmedoids(data_points, numClusters);
-    
-    % Menentukan cluster untuk setiap data point
-    clusters_x = zeros(size(data_points, 1), 1);
-    clusters_y = zeros(size(data_points, 1), 1);
-    for i = 1:numClusters
-        cluster_idx = idx_clusters == i;
-        clusters_x(cluster_idx) = i;
-        clusters_y(cluster_idx) = i;
-    end
-    
-    colors = ['b', 'g', 'r', 'c'];
-    
-    for i = 1:numClusters
-        cluster_idx = idx_clusters == i;
-        plot(x_data(cluster_idx), y_data(cluster_idx), 'o', 'MarkerFaceColor', colors(i));
-    end
-    
-    % Menambahkan legend untuk cluster
-    legend_strings = cell(numClusters, 1);
-    for i = 1:numClusters
-        legend_strings{i} = sprintf('Cluster %d', i);
-    end
-    
-    % Menentukan titik referensi sebagai "head"
-    x_ref = 120;
-    y_ref = 50;
-    
-    % Menghitung jarak antara titik referensi dan medoid dari masing-masing cluster
-    distances_to_reference = zeros(numClusters, 1);
-    for i = 1:numClusters
-        cluster_points = data_points(idx_clusters == i, :);
-        medoid_idx = knnsearch(cluster_points, C(i, :));
-        medoid = cluster_points(medoid_idx, :);
-        distances_to_reference(i) = sqrt((medoid(1) - x_ref)^2 + (medoid(2) - y_ref)^2);
-    end
-    
-    % Menentukan head cluster (cluster dengan medoid terdekat)
-    [~, head_cluster_id] = min(distances_to_reference);
-    
-    % Menampilkan tentang head cluster
-    fprintf('Head Cluster ID: %d\n', head_cluster_id);
-    fprintf('Head Cluster Medoid: (%.2f, %.2f)\n', C(head_cluster_id, 1), C(head_cluster_id, 2));
-
-    % Menambahkan kolom cluster kepala ke dalam matriks data
-    data_with_clusters = [x_data, y_data, clusters_x, clusters_y, head_cluster_id * ones(size(x_data))];
-    
-    legend(legend_strings, 'Location', 'northwest');
-    
-    % Plot RSU
-    plot(rsu_x, rsu_y, 'h', 'MarkerFaceColor', 'k', 'MarkerSize', 10);
-    text(rsu_x, rsu_y, ' RSU ', 'HorizontalAlignment', 'left')
-    
-    xlabel('Data x');
-    ylabel('Data y');
-
-    % Menampilkan label untuk head cluster
-    head_cluster_points = data_points(idx_clusters == head_cluster_id, :);
-    %text(head_cluster_points(:, 1), head_cluster_points(:, 2), 'HC', 'Color', 'k', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom');
- 
     % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
     for j = 1:length(Data_l)
         idx_l = idx & strcmp(l, Data_l(j));
@@ -428,29 +358,94 @@ for i = 1:length(Data_t)
             end
     
             % Menggambar garis dengan warna yang sesuai
-            line1 = plot([x_l(k), x_l(k+1)], [y_l(k), y_l(k+1)], '--', 'Color', line_color);
+            %line1 = plot([x_l(k), x_l(k+1)], [y_l(k), y_l(k+1)], '--', 'Color', line_color);
         end
     
         % Menghitung jarak antara titik dengan RSU
         distance_to_rsu = sqrt((x_l - rsu_x).^2 + (y_l - rsu_y).^2);
         idx_rsu = distance_to_rsu <= 30;
     
-        % Menghitung jarak antara titik dengan RSU dan overwrite data
-        distance_to_rsu = sqrt((x - rsu_x).^2 + (y - rsu_y).^2);
-        data.Distance_to_RSU = distance_to_rsu;
-    
         % Menggambar garis yang menghubungkan titik dengan RSU
         for k = 1:length(x_l(idx_rsu))
-            line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
+            %line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
         end
     end
     
-    % Menambahkan legend untuk cluster
-    legend_str = cell(1, numClusters);
-    for i = 1:numClusters
-        legend_str{i} = ['Cluster ' num2str(i)];
+    % Menambahkan data angle dan normalisasi
+    data_angle = a; % Mengambil data angle 
+    % Menentukan rentang (range) dari data sudut yang akan digunakan dalam normalisasi
+    min_angle = min(data_angle);
+    max_angle = max(data_angle);
+    
+    % Normalisasi data sudut 
+    min_range = min(x); 
+    max_range = max(x); 
+    % Variable x untuk menyimpan data min_range mac_range
+    
+    normalized_angle = min_range + ((data_angle - min_angle) / (max_angle - min_angle)) * (max_range - min_range); 
+    % (data_angle - min_angle) akan menghasilkan data selisih data antara nilai angle 
+    % (max_angle - min_angle akan menghasilkan data angle yang max dengan min
+   
+    % Menambahkan clustering K-Medoids 
+    data_xy_angle = [x(idx), y(idx), normalized_angle(idx)]; % Menggabungkan data x, data y, dan data angle yang sudah dinormalisasikan
+    
+    k = 4; % Jumlah cluster yang dipilih
+
+    [idx_medoids, C, sumd, D] = kmedoids(data_xy_angle, k, 'Distance', 'euclidean'); 
+
+    % [idx,C,sumd,D,midx] = kmedoids(___) dengan menggunakan syntax kmedoids, data dilakukan perhitungan dengan Euclidian Distance 
+    % idx_medoids yang berisi indeks cluster 
+    % C berisi medoid (titik pusat) dari masing-masing cluster
+    % sumd berisi k yang berisi total jarak (jarak Euclidean) dari masing-masing cluster
+    % D berisi matriks jarak antara setiap titik data dengan semua medoid dalam cluster
+    
+    % Menggambar hasil clustering dengan warna yang berbeda
+    for cluster = 1:k
+        cluster_points = data_xy_angle(idx_medoids == cluster, :); % Menghitung cluster-cluster hasil dari proses k-medoids cluster
+        % cluster_points berisi data yang termasuk dalam cluster
+    
+        if cluster == 1
+            marker = 'h'; 
+            color = 'blue';
+        elseif cluster == 2
+            marker = 's'; 
+            color = 'red';
+        elseif cluster == 3
+            marker = '^'; 
+            color = 'green';
+        else
+            marker = 'd'; 
+            color = 'magenta';
+        end
+
+        % Menambahkan label jenis kendaraan pada titik-titik data
+        for i = 1:size(cluster_points, 1)
+            x_label = cluster_points(i, 1);
+            y_label = cluster_points(i, 2);
+            a_label = cluster_points(i, 3);
+            vehicle_label = p(idx_medoids == cluster); % Mengambil label jenis kendaraan sesuai dengan cluster
+        
+            text(x_label, y_label, a_label, vehicle_label{i}, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'FontSize', 8, 'Color', color);
+            hold on;
+        end
+        % Menampilkan Plot cluster
+        scatter3(cluster_points(:, 1), cluster_points(:, 2), cluster_points(:, 3), 50, color, marker, 'filled');
+        hold on;
+    
+        % Menampilkan Plot medoid cluster 
+        scatter3(C(cluster, 1), C(cluster, 2), C(cluster, 3), 200, color, 'X', 'LineWidth', 2);
+        hold on;
     end
-    legend([legend_str, 'RSU'], 'Location', 'northwest');
+    
+    % Menambahkan label pada plot
+    xlabel('Data x');
+    ylabel('Data y');
+    zlabel('Normalized Angle');
+    title('Hasil Clustering K-Medoids (4 Cluster) dengan Data Sudut yang Dinormalisasi');
+    
+    % Menampilkan legend
+    legend('RSU', 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
+
 
     pause(0.45);
 
@@ -460,7 +455,7 @@ for i = 1:length(Data_t)
     %outputFile = 'Hsimulasi_with_kondisi.xlsx';
     %xlswrite(outputFile, outputData, sheet);
     %outputFilename = 'Hsimulasi_with_kondisi.xlsx';
-    writetable(data, filename, 'Sheet', sheet, 'WriteVariableNames', true);
+    %writetable(data, filename, 'Sheet', sheet, 'WriteVariableNames', true);
 
     % Membuat objek Koneksi V2V dan V2I
     v2vConnection = V2VConnection(data);

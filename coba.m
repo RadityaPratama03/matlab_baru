@@ -263,26 +263,60 @@ for i = 1:length(Data_t)
             %line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
         end
     end
+
+    % Menambahkan data speed dan normalisasi
+    data_speed = data.speed; % Mengambil data speed
     
-    % Menambahkan data sudut (angle) dan normalisasi
-    data_angle = a; 
+    % Menentukan rentang (range) dari data speed yang akan digunakan dalam normalisasi
+    min_speed = min(data_speed);
+    max_speed = max(data_speed);
+    
+    % Normalisasi data speed
+    normalized_speed = min_range + ((data_speed - min_speed) / (max_speed - min_speed)) * (max_range - min_range);
+    
+    % Menambahkan data speed ke dalam data_xy_angle
+    data_xy_angle_speed = [x(idx), y(idx), normalized_angle(idx), normalized_speed(idx)];
+    
+    % Tambahkan label untuk data speed
+    speed_label = cell(size(data, 1), 1);
+    for i = 1:size(data, 1)
+        speed_label{i} = sprintf('  %.2f  ', data_speed(i));
+    end
+    
+    % Menambahkan data angle dan normalisasi
+    data_angle = a; % Mengambil data angle 
+    % Menentukan rentang (range) dari data sudut yang akan digunakan dalam normalisasi
     min_angle = min(data_angle);
     max_angle = max(data_angle);
     
-    % Normalisasi data sudut ke rentang yang sama dengan data x dan y
+    % Normalisasi data sudut 
     min_range = min(x); 
     max_range = max(x); 
+    % Variable x untuk menyimpan data min_range max_range
     
-    normalized_angle = min_range + ((data_angle - min_angle) / (max_angle - min_angle)) * (max_range - min_range);
+    normalized_angle = min_range + ((data_angle - min_angle) / (max_angle - min_angle)) * (max_range - min_range); 
+    % (data_angle - min_angle) akan menghasilkan data selisih data antara nilai angle 
+    % (max_angle - min_angle akan menghasilkan data angle yang max dengan min
+   
+    % Menambahkan clustering K-Medoids 
+    data_xy_angle = [x(idx), y(idx), normalized_angle(idx)]; % Menggabungkan data x, data y, dan data angle yang sudah dinormalisasikan
     
-    % Menambahkan clustering K-Medoids menggunakan data x, y, dan sudut yang telah dinormalisasi
-    data_xy_angle = [x(idx), y(idx), normalized_angle(idx)];
-    k = 4; 
-    [idx_medoids, C, sumd, D] = kmedoids(data_xy_angle, k, 'Distance', 'euclidean');
+    k = 4; % Jumlah cluster yang dipilih
+
+    [idx_medoids, C, sumd, D] = kmedoids(data_xy_angle_speed, k, 'Distance', 'euclidean');
+    %[idx_medoids, C, sumd, D] = kmedoids(data_xy_angle, k, 'Distance', 'euclidean'); 
+
+    % [idx,C,sumd,D,midx] = kmedoids(___) dengan menggunakan syntax kmedoids, data dilakukan perhitungan dengan Euclidian Distance 
+    % idx_medoids yang berisi indeks cluster 
+    % C berisi medoid (titik pusat) dari masing-masing cluster
+    % sumd berisi k yang berisi total jarak (jarak Euclidean) dari masing-masing cluster
+    % D berisi matriks jarak antara setiap titik data dengan semua medoid dalam cluster
     
     % Menggambar hasil clustering dengan warna yang berbeda
     for cluster = 1:k
-        cluster_points = data_xy_angle(idx_medoids == cluster, :);
+        %cluster_points = data_xy_angle(idx_medoids == cluster, :); % Menghitung cluster-cluster hasil dari proses k-medoids cluster
+        % cluster_points berisi data yang termasuk dalam cluster
+        cluster_points = data_xy_angle_speed(idx_medoids == cluster, :); % Menghitung cluster-cluster hasil dari proses k-medoids cluster
     
         if cluster == 1
             marker = 'h'; 
@@ -297,25 +331,30 @@ for i = 1:length(Data_t)
             marker = 'd'; 
             color = 'magenta';
         end
-    
-        % Plot titik-titik yang termasuk dalam cluster
+
+        % Menampilkan Plot cluster
         scatter3(cluster_points(:, 1), cluster_points(:, 2), cluster_points(:, 3), 50, color, marker, 'filled');
         hold on;
     
-        % Plot medoid cluster dengan tanda bintang
+        % Menampilkan Plot medoid cluster 
         scatter3(C(cluster, 1), C(cluster, 2), C(cluster, 3), 200, color, 'X', 'LineWidth', 2);
         hold on;
+
+        % Menambahkan label kecepatan ke plot dengan mengatur font
+        for i = 1:size(data_xy_angle_speed, 1)
+            text(data_xy_angle_speed(i, 1), data_xy_angle_speed(i, 2), data_xy_angle_speed(i, 3), speed_label{i},'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'Color', 'black', 'FontSize', 6);
+        end
     end
-  
+    
     % Menambahkan label pada plot
     xlabel('Data x');
     ylabel('Data y');
     zlabel('Normalized Angle');
-    title('Hasil Clustering K-Medoids (4 Cluster) dengan Data Sudut yang Dinormalisasi');
+    title('Hasil Clustering K-Medoids (4 Cluster)');
     
-    % Menampilkan legenda
-    legend('RSU', 'Cluster 1', 'Head Cluster 1', 'Cluster 2', 'Head Cluster 2', 'Cluster 3', 'Head Cluster 3', 'Cluster 4', 'Head Cluster 4', 'Location', 'northwest');
-       
+    % Menampilkan legend
+    legend('RSU', 'Cluster 1', 'Medoid 1', 'Cluster 2', 'Medoid 2', 'Cluster 3', 'Medoid 3', 'Cluster 4', 'Medoid 4', 'Location', 'northwest');
+
     pause(0.45);
 
     data.Kondisi = kondisi;
@@ -324,6 +363,17 @@ for i = 1:length(Data_t)
     % Membuat objek Koneksi V2V dan V2I
     v2vConnection = V2VConnection(data);
     v2iConnection = V2IConnection(data);
+
+%             % Menambahkan label jenis kendaraan pada titik-titik data
+%         for i = 1:size(cluster_points, 1)
+%             x_label = cluster_points(i, 1);
+%             y_label = cluster_points(i, 2);
+%             a_label = cluster_points(i, 3);
+%             vehicle_label = p(idx_medoids == cluster); % Mengambil label jenis kendaraan sesuai dengan cluster
+%         
+%             text(x_label, y_label, a_label, vehicle_label{i}, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'FontSize', 8, 'Color', color);
+%             hold on;
+%         end
         
 end
 hold off;
