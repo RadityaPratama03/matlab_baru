@@ -128,7 +128,7 @@ for i = 1:length(Data_t)
         traceCount = zeros(size(xy_array, 1), 1);
         reachableDuration = zeros(size(xy_array, 1), 1);
         
-        for k = 1:size(xy_array, 1) % ubah data x, y
+        for k = 1:size(xy_array, 1) 
             if k == 1
                 if strcmp(kondisi{k}, 'reachable')
                     reachableDuration(k) = 1;
@@ -294,7 +294,7 @@ for i = 1:length(Data_t)
     
     % Menggambar hasil clustering dengan warna yang berbeda
     for cluster = 1:k
-        cluster_points = data_xy_angle(idx_medoids == cluster, :); % Menghitung cluster-cluster hasil dari proses k-medoids cluster
+        cluster_points = data_xy_angle(idx_medoids == cluster, :); % Melakukan iterasi cluster-cluster hasil dari proses k-medoids cluster
         % cluster_points berisi data yang termasuk dalam cluster
     
         if cluster == 1
