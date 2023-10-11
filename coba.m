@@ -313,7 +313,7 @@ for i = 1:length(Data_t)
         
         % Menentukan warna berdasarkan jarak
         if distance_to_rsu <= 30
-            color = 'green'; % Ubah warna menjadi hijau jika terkoneksi RSU
+            color = 'green';
         end
         
         % Plot centroid atau head cluster
@@ -329,7 +329,7 @@ for i = 1:length(Data_t)
         end
     end
     
-    % Hapus node kendaraan yang bukan head cluster
+    % Menghapus node kendaraan yang bukan head cluster
     for i = 1:size(data_xy_angle_speed, 1)
         connected_to_rsu = false;
         for cluster_points = 1:k
