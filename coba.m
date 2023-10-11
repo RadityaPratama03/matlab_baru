@@ -43,7 +43,7 @@ hold on;
 
 subplot(5, 1, 4);
 axis([-50 350 -40 120]);
-title('Jalur PKU Reachable dan Unreachable');
+title('Reachable (Hijau) dan Unreachable (Merah)');
 xlabel('Data x');
 ylabel('Data y');
 grid on;
@@ -279,9 +279,9 @@ for i = 1:length(Data_t)
         hold on;
 
         % Menambahkan label kecepatan ke plot dengan mengatur font
-        for i = 1:size(data_xy_angle_speed, 1)
-            text(data_xy_angle_speed(i, 1), data_xy_angle_speed(i, 2), data_xy_angle_speed(i, 3), speed_label{i},'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'Color', 'black', 'FontSize', 6);
-        end
+%         for i = 1:size(data_xy_angle_speed, 1)
+%             text(data_xy_angle_speed(i, 1), data_xy_angle_speed(i, 2), data_xy_angle_speed(i, 3), speed_label{i},'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'Color', 'black', 'FontSize', 6);
+%         end
     end
     
     % Menambahkan label pada plot
@@ -296,22 +296,20 @@ for i = 1:length(Data_t)
     % Plot untuk Reachable dan Unreachable
     subplot(5, 1, 4);
     cla;
-    plot(x(idx_mobil), y(idx_mobil), 'o', 'MarkerFaceColor', 'Green');
-    hold on;
-    plot(x(idx_taxi), y(idx_taxi), 'o', 'MarkerFaceColor', 'Red');
-    hold on;
+    
+    % Plot RSU
     text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left')
     hold on;
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
 
     % Menambahkan centroid atau head cluster
-    for cluster = 1:k
-        marker = 'o'; 
-        color = 'red'; % Default warna merah
-    
+    for cluster_points = 1:k
+        marker = 'o';
+        color = 'red';
+        
         % Menghitung jarak antara centroid dengan RSU
-        distance_to_rsu = sqrt((C(cluster, 1) - rsu_x).^2 + (C(cluster, 2) - rsu_y).^2);
+        distance_to_rsu = sqrt((C(cluster_points, 1) - rsu_x).^2 + (C(cluster_points, 2) - rsu_y).^2);
         
         % Menentukan warna berdasarkan jarak
         if distance_to_rsu <= 30
@@ -319,82 +317,36 @@ for i = 1:length(Data_t)
         end
         
         % Plot centroid atau head cluster
-        scatter3(C(cluster, 1), C(cluster, 2), C(cluster, 3), 200, color, 'X', 'LineWidth', 2);
+        scatter3(C(cluster_points, 1), C(cluster_points, 2), C(cluster_points, 3), 200, color, 'X', 'LineWidth', 2);
         hold on;
+        
+        % Menghubungkan head cluster sesama cluster (V2V)
+        for other_cluster = 1:k
+            if other_cluster ~= cluster_points
+                % Menghitung jarak antara dua head cluster
+                distance_to_other = sqrt((C(cluster_points, 1) - C(other_cluster, 1))^2 + (C(cluster_points, 2) - C(other_cluster, 2))^2);
+            end
+        end
     end
     
-    % Mengubah warna node centroid atau head cluster menjadi hijau ketika terkoneksi dengan RSU
+    % Hapus node kendaraan yang bukan head cluster
     for i = 1:size(data_xy_angle_speed, 1)
-        connected_to_rsu = false; 
-        for cluster = 1:k
+        connected_to_rsu = false;
+        for cluster_points = 1:k
             % Menghitung jarak antara node dengan centroid cluster
-            distance_to_centroid = sqrt((data_xy_angle_speed(i, 1) - C(cluster, 1))^2 + (data_xy_angle_speed(i, 2) - C(cluster, 2))^2);
+            distance_to_centroid = sqrt((data_xy_angle_speed(i, 1) - C(cluster_points, 1))^2 + (data_xy_angle_speed(i, 2) - C(cluster_points, 2))^2);
             if distance_to_centroid <= 30
-                connected_to_rsu = true; 
-                break; 
+                connected_to_rsu = true;
+                break;
             end
-        end
-        
-        % Mengatur warna node sesuai dengan koneksi ke RSU
-        if connected_to_rsu
-            node_color = 'green'; % hijau jika terkoneksi RSU
-        else
-            node_color = 'red'; % merah jika tidak terkoneksi RSU
-        end
-    end  
-
-    % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
-    for j = 1:length(Data_l)
-        idx_l = idx & strcmp(l, Data_l(j));
-        x_l = x(idx_l);
-        y_l = y(idx_l);
-        id_l = data.id(idx_l); % Kolom id dari data
-        type_l = data.type(idx_l); % Kolom type dari data
-
-        % Menggambar garis yang menghubungkan titik terdekat
-        for k = 1:length(x_l)-1
-            % Menghitung jarak antara dua titik
-            distance2 = sqrt((x_l(k+1) - x_l(k))^2 + (y_l(k+1) - y_l(k))^2);
-
-            % Memilih warna berdasarkan jarak
-            if distance2 <= 30
-                line_color = 'green'; % Warna hijau untuk jarak <= 30 meter
-            elseif distance2 <= 50
-                line_color = 'red'; % Warna merah untuk jarak <= 50 meter
-            end
-
-            % Menggambar garis dengan warna yang sesuai
-            line1 = plot([x_l(k), x_l(k+1)], [y_l(k), y_l(k+1)], '--', 'Color', line_color);
-        end
-
-        % Menghitung jarak antara titik dengan RSU
-        distance_to_rsu = sqrt((x_l - rsu_x).^2 + (y_l - rsu_y).^2);
-        idx_rsu = distance_to_rsu <= 30;
-
-        % Menghitung jarak antara titik dengan RSU dan overwrite data
-        distance_to_rsu = sqrt((x - rsu_x).^2 + (y - rsu_y).^2);
-        data.Distance_to_RSU = distance_to_rsu;
-
-        % Menggambar garis yang menghubungkan titik dengan RSU
-        for k = 1:length(x_l(idx_rsu))
-            line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
-        end
-        
-        % Memberikan warna pada mobil & taxi ketika jarak >= 300
-        for k = 1:size(x_l)
-            Xi = x_l(k);
-            Yi = y_l(k);
-            id_i = id_l(k); % Id kendaraan
-            type_i = type_l{k}; % Type kendaraan
-            if Xi <= 300 && sqrt((Xi - rsu_x).^2 + (Yi - rsu_y).^2) <= 30
-                node_color = 'Green';
-            elseif Yi <= 300 
-                node_color = 'Red';
-            end
-            plot(Xi, Yi, 'o', 'MarkerFaceColor', node_color);
         end
     end
-    legend('reachable','unreachable', 'RSU', 'Location', 'northwest');
+    
+    % Menghilangkan data yang tidak terhubung ke RSU
+    data_xy_angle_speed = data_xy_angle_speed(~any(isnan(data_xy_angle_speed), 2), :);
+    
+    % Tampilkan legenda
+    legend('RSU', 'Headcluster', 'Location', 'northwest');
 
     % Plot untuk Wormhole
     subplot(5, 1, 5);
@@ -457,16 +409,14 @@ for i = 1:length(Data_t)
     v2vConnection = V2VConnection(data);
     v2iConnection = V2IConnection(data);
 
-%             % Menambahkan label jenis kendaraan pada titik-titik data
-%         for i = 1:size(cluster_points, 1)
-%             x_label = cluster_points(i, 1);
-%             y_label = cluster_points(i, 2);
-%             a_label = cluster_points(i, 3);
-%             vehicle_label = p(idx_medoids == cluster); % Mengambil label jenis kendaraan sesuai dengan cluster
-%         
-%             text(x_label, y_label, a_label, vehicle_label{i}, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'middle', 'FontSize', 8, 'Color', color);
-%             hold on;
-%         end
+%     % Contoh penggunaan objek v2vConnection:
+%     v2vData = v2vConnection.Data; 
+%     v2vRSUs = v2vConnection.Vehicles; 
+%     
+%     % Contoh penggunaan objek v2iConnection:
+%     v2iData = v2iConnection.Data; 
+%     v2iRSUs = v2iConnection.RSUs;
+
         
 end
 hold off;
