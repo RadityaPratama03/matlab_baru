@@ -120,33 +120,64 @@ for i = 1:length(Data_t)
             line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
         end
 
+%         % Inisialisasi matriks jarak antara setiap kendaraan ke RSU
+%         distance_to_rsu_matrix = zeros(size(data, 1), 1);
+%         
+%         % Isi kolom "DistanceToRSU" dengan data jarak
+%         for k = 1:size(data, 1)
+%             distance_to_rsu = sqrt((data.x(k) - rsu_x)^2 + (data.y(k) - rsu_y)^2);
+%             distance_to_rsu_matrix(k) = distance_to_rsu;
+%         end
+%         
+%         % Tambahkan kolom baru ke dalam data
+%         data.DistanceToRSU = distance_to_rsu_matrix;
+
         % Menambahkan kondisi "reachable" atau "unreachable"
-        kondisi = cell(size(data, 1), 1); % 
+        kondisi = cell(size(data, 1), 1);
         for k = 1:size(data, 1)
-            if x(k) <= 300 
-                 kondisi{k} = 'reachable';
-            elseif y(k) <= 300 
-                 kondisi{k} = 'unreachable';
+            if x(k) <= 255
+                kondisi{k} = 'reachable';
+            elseif y(k) <= 255
+                kondisi{k} = 'unreachable';
+            end
+            
+            % Tambahkan kondisi untuk mengubah menjadi 'unreachable' jika reachableDuration mencapai atau melebihi 20
+            if k > 255 && strcmp(kondisi{k}, 'reachable')
+                kondisi{k} = 'unreachable';
             end
         end
-
+        
         % Menghitung TraceCount Reachable/Second
         traceCount = zeros(size(xy_array, 1), 1);
         reachableDuration = zeros(size(xy_array, 1), 1);
+        reached = false;
         
-        for k = 1:size(xy_array, 1) 
+        for k = 1:size(xy_array, 1)
             if k == 1
                 if strcmp(kondisi{k}, 'reachable')
                     reachableDuration(k) = 1;
+                    reached = true;
                 else
                     reachableDuration(k) = 0;
                 end
             else
                 if strcmp(kondisi{k}, 'reachable')
-                    reachableDuration(k) = reachableDuration(k-1) + 1;
+                    if reached
+                        reachableDuration(k) = reachableDuration(k - 1) + 1;
+                    else
+                        reached = true;
+                        % Tetapkan reachableDuration(k) ke nilai sebelumnya + 1, atau minimal 1
+                        reachableDuration(k) = max(reachableDuration(k - 1) + 1, 1);
+                    end
                 else
-                    reachableDuration(k) = reachableDuration(k-1) - 1;
-                end
+                    reached = false;
+                    % Tetapkan reachableDuration(k) ke nilai sebelumnya, atau minimal 0
+                    reachableDuration(k) = max(reachableDuration(k - 1), 0);
+                    % Tambahkan kondisi untuk mengatur reachableDuration menjadi 0 jika data > 20
+                    if k > 255 && strcmp(kondisi{k}, 'unreachable') %x(k) > 255 && y(k) > 255
+                        reachableDuration(k) = 0;
+                    end
+                end 
             end
             traceCount(k) = k;
         end
@@ -303,50 +334,62 @@ for i = 1:length(Data_t)
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
 
-    % Menambahkan centroid atau head cluster
-    for cluster_points = 1:k
-        marker = 'o';
-        color = 'red';
-        
-        % Menghitung jarak antara centroid dengan RSU
-        distance_to_rsu = sqrt((C(cluster_points, 1) - rsu_x).^2 + (C(cluster_points, 2) - rsu_y).^2);
-        
-        % Menentukan warna berdasarkan jarak
-        if distance_to_rsu <= 30
-            color = 'green';
-        end
-        
-        % Plot centroid atau head cluster
-        scatter3(C(cluster_points, 1), C(cluster_points, 2), C(cluster_points, 3), 200, color, 'X', 'LineWidth', 2);
-        hold on;
-        
-        % Menghubungkan head cluster sesama cluster (V2V)
-        for other_cluster = 1:k
-            if other_cluster ~= cluster_points
-                % Menghitung jarak antara dua head cluster
-                distance_to_other = sqrt((C(cluster_points, 1) - C(other_cluster, 1))^2 + (C(cluster_points, 2) - C(other_cluster, 2))^2);
+    % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
+    for j = 1:length(Data_l)
+        idx_l = idx & strcmp(l, Data_l(j));
+        x_l = x(idx_l);
+        y_l = y(idx_l);
+        id_l = data.id(idx_l); % Kolom id dari data
+        type_l = data.type(idx_l); % Kolom type dari data
+
+        % Menghitung jarak antara titik dengan RSU
+        distance_to_rsu = sqrt((x_l - rsu_x).^2 + (y_l - rsu_y).^2);
+        idx_rsu = distance_to_rsu <= 30;
+
+        % Menghitung jarak antara titik dengan RSU dan overwrite data
+        distance_to_rsu = sqrt((x - rsu_x).^2 + (y - rsu_y).^2);
+        data.Distance_to_RSU = distance_to_rsu;
+    end
+
+    reachable_centroid = scatter3(nan, nan, nan, 200, 'green', 'X', 'LineWidth', 2);
+    unreachable_centroid = scatter3(nan, nan, nan, 200, 'red', 'X', 'LineWidth', 2);
+
+    % Menambahkan centroid cluster dengan tanda X dan warna berdasarkan kondisi
+    for cluster = 1:k
+        for cluster1 = 1:k
+            for cluster2 = 1:k
+                if cluster1 == cluster2
+                    cluster_points1 = C(cluster1, :);
+                    cluster_points2 = C(cluster2, :);
+                    if cluster1 ~= cluster2
+                        line([cluster_points1(1), cluster_points2(1)], ...
+                             [cluster_points1(2), cluster_points2(2)], ...
+                             [cluster_points1(3), cluster_points2(3)], 'Color', color, 'LineStyle', '-', 'LineWidth', 2);
+                    end
+                end
+            end
+        end 
+        if cluster <= size(C, 1)
+            centroid_x = C(cluster, 1);
+            centroid_y = C(cluster, 2);
+            centroid_z = C(cluster, 3);
+    
+            % Menghitung jarak antara centroid dengan RSU
+            distance_to_rsu = sqrt((centroid_x - rsu_x)^2 + (centroid_y - rsu_y)^2);
+    
+           % Plot centroid cluster dengan tanda X dan warna yang sesuai
+            if distance_to_rsu <= 30
+                scatter3(centroid_x, centroid_y, centroid_z, 200, 'green', 'X', 'LineWidth', 2);
+                hold on;
+            else
+                scatter3(centroid_x, centroid_y, centroid_z, 200, 'red', 'X', 'LineWidth', 2);
+                hold on;
             end
         end
     end
-    
-    % Menghapus node kendaraan yang bukan head cluster
-    for i = 1:size(data_xy_angle_speed, 1)
-        connected_to_rsu = false;
-        for cluster_points = 1:k
-            % Menghitung jarak antara node dengan centroid cluster
-            distance_to_centroid = sqrt((data_xy_angle_speed(i, 1) - C(cluster_points, 1))^2 + (data_xy_angle_speed(i, 2) - C(cluster_points, 2))^2);
-            if distance_to_centroid <= 30
-                connected_to_rsu = true;
-                break;
-            end
-        end
-    end
-    
-    % Menghilangkan data yang tidak terhubung ke RSU
-    data_xy_angle_speed = data_xy_angle_speed(~any(isnan(data_xy_angle_speed), 2), :);
     
     % Tampilkan legenda
-    legend('RSU', 'Headcluster', 'Location', 'northwest');
+    legend('RSU', 'Headcluster Reachable', 'Headcluster Unreachable', 'Location', 'northwest');
 
     % Plot untuk Wormhole
     subplot(5, 1, 5);
@@ -398,6 +441,43 @@ for i = 1:length(Data_t)
             line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
         end
     end
+
+    % Tentukan koordinat lokasi wormhole
+    lokasi_x1 = 100; 
+    lokasi_x2 = 200; 
+    lokasi_y1 = 50;  
+    lokasi_y2 = 60; 
+
+    % Menambahkan elemen visualisasi untuk serangan wormhole
+    x_wormhole = [lokasi_x1, lokasi_x2]; 
+    y_wormhole = [lokasi_y1, lokasi_y2]; 
+    plot(x_wormhole, y_wormhole, 'x', 'MarkerSize', 10, 'MarkerEdgeColor', 'black', 'LineWidth', 2);
+    
+    % Menambahkan label atau teks untuk menunjukkan wormhole
+    text(x_wormhole(1), y_wormhole(1), 'WH 1', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
+    text(x_wormhole(2), y_wormhole(2), 'WH 2', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
+ 
+    % Tentukan neighborhoods dari node A dan B
+    NA1 = [1, 2, 3]; 
+    NA2 = [2, 4, 5];  
+    NB1 = [3, 6, 7]; 
+    NB2 = [2, 8, 9]; 
+    
+    % Inisialisasi variabel untuk menyimpan hasil
+    result = 'belum ditentukan';
+    
+    % Cek jika N(A)1 ∩ N(B)1
+    if any(ismember(NA1, NB1))
+        result = 'Legitimate';
+    elseif any(ismember(NA1, NB2))
+        result = 'Legitimate';
+    else
+        result = 'Malicious';
+    end
+    
+    % Tampilan Hasil
+    disp(['Node A adalah ' result]);
+
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
     pause(0.45);
@@ -409,11 +489,11 @@ for i = 1:length(Data_t)
     v2vConnection = V2VConnection(data);
     v2iConnection = V2IConnection(data);
 
-%     % Contoh penggunaan objek v2vConnection:
+%     % penggunaan objek v2vConnection:
 %     v2vData = v2vConnection.Data; 
 %     v2vRSUs = v2vConnection.Vehicles; 
 %     
-%     % Contoh penggunaan objek v2iConnection:
+%     % penggunaan objek v2iConnection:
 %     v2iData = v2iConnection.Data; 
 %     v2iRSUs = v2iConnection.RSUs;
 
