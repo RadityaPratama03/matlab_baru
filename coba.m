@@ -68,12 +68,13 @@ for i = 1:length(Data_t)
     subplot(5, 1, 1);
     cla;
     idx = t == Data_t(i);
-    xy_array = [xy_array; x(idx) y(idx)];
+    xy_array = [x(idx), y(idx)];
     distance1 = sqrt((xy_array(:, 1).^2) + (xy_array(:, 2).^2));
+
     % Memisahkan data berdasarkan jenis kendaraan
     idx_mobil = idx & strcmp(p, 'mobil');
     idx_taxi = idx & strcmp(p, 'taxi');
- 
+
     % Plot titik koordinat mobil dengan warna hijau
     plot(x(idx_mobil), y(idx_mobil), 'o', 'MarkerFaceColor', 'Green');
     hold on;
@@ -94,7 +95,7 @@ for i = 1:length(Data_t)
         idx_l = idx & strcmp(l, Data_l(j));
         x_l = x(idx_l);
         y_l = y(idx_l);
-
+    
         % Menggambar garis yang menghubungkan titik terdekat
         for k = 1:length(x_l)-1
             % Menghitung jarak antara dua titik
@@ -398,7 +399,7 @@ for i = 1:length(Data_t)
     hold on;
     plot(x(idx_taxi), y(idx_taxi), 'o', 'MarkerFaceColor', 'Red');
     hold on;
-    text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left')
+    text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left');
     hold on;
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
@@ -442,6 +443,103 @@ for i = 1:length(Data_t)
         end
     end
 
+%     % AODV Routing Algorithm Simulation
+%     x = 1:20;
+%     s1 = x(1);
+%     d1 = x(20);
+%     
+%     % Initialize distance matrix representing distances between nodes
+%     xy_array = rand(20);
+%     for i = 1:20
+%         for j = 1:20
+%             if i == j
+%                 xy_array(i, j) = 0;
+%             else
+%                 xy_array(j, i) = xy_array(i, j);
+%             end
+%         end
+%     end
+%     
+%     t = 1:20;
+%     
+%     status(1) = '!';
+%     dist(2) = 0;
+%     next(1) = 0;
+%     
+%     for i = 2:20
+%         status(i) = '?';
+%         dist(i) = xy_array(i, 1);
+%         next(i) = 1;
+%     end
+%     
+%     flag = 0;
+%     
+%     % Check if Node 1 can directly reach Node 20
+%     for i = 2:20
+%         if xy_array(1, i) == 1
+%             disp(['Node 1 sends RREQ to node ' num2str(i)]);
+%             if i == 20 && xy_array(1, i) == 1
+%                 flag = 1;
+%             end
+%         end
+%     end
+%     
+%     disp(['Flag = ' num2str(flag)]);
+%     
+%     while (1)
+%         if flag == 1
+%             break;
+%         end
+%         temp = 0;
+%     
+%         % Find the node with the smallest distance
+%         for i = 1:20
+%             if status(i) == '?'
+%                 D = dist(i);
+%                 vert = i;
+%                 break;
+%             end
+%         end
+%     
+%         for i = 1:20
+%             if D > dist(i) && status(i) == '?'
+%                 D = dist(i);
+%                 vert = i;
+%             end
+%         end
+%     
+%         status(vert) = '!';
+%     
+%         for i = 1:20
+%             if status() == '!'
+%                 temp = temp + 1;
+%             end
+%         end
+%     
+%         if temp == 20
+%             break;
+%         end
+%     end
+%     
+%     i = 20;
+%     count = 1;
+%     route(count) = 20;
+%     
+%     while next(i) ~= 1
+%         disp(['Node ' num2str(i) ' sends RREP message to node ' num2str(next(i))]);
+%         i = next(i);
+%         count = count + 1;
+%         route(count) = i;
+%     end
+%     
+%     disp([ 'Node ' num2str(i) ' sends RREP to node 1']);
+%     disp('Node 1');
+%     
+%     for i = count: -1:1
+%         disp([ 'Sends message to node ' num2str(route(i))]);
+%     end
+
+    
     % Tentukan koordinat lokasi wormhole
     lokasi_x1 = 100; 
     lokasi_x2 = 200; 
@@ -457,26 +555,26 @@ for i = 1:length(Data_t)
     text(x_wormhole(1), y_wormhole(1), 'WH 1', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
     text(x_wormhole(2), y_wormhole(2), 'WH 2', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
  
-    % Tentukan neighborhoods dari node A dan B
-    NA1 = [1, 2, 3]; 
-    NA2 = [2, 4, 5];  
-    NB1 = [3, 6, 7]; 
-    NB2 = [2, 8, 9]; 
-    
-    % Inisialisasi variabel untuk menyimpan hasil
-    result = 'belum ditentukan';
-    
-    % Cek jika N(A)1 ∩ N(B)1
-    if any(ismember(NA1, NB1))
-        result = 'Legitimate';
-    elseif any(ismember(NA1, NB2))
-        result = 'Legitimate';
-    else
-        result = 'Malicious';
-    end
-    
-    % Tampilan Hasil
-    disp(['Node A adalah ' result]);
+%     % Tentukan neighborhoods dari node A dan B
+%     NA1 = [1, 2, 3]; 
+%     NA2 = [2, 4, 5];  
+%     NB1 = [3, 6, 7]; 
+%     NB2 = [2, 8, 9]; 
+%     
+%     % Inisialisasi variabel untuk menyimpan hasil
+%     result = 'belum ditentukan';
+%     
+%     % Cek jika N(A)1 ∩ N(B)1
+%     if any(ismember(NA1, NB1))
+%         result = 'Legitimate';
+%     elseif any(ismember(NA1, NB2))
+%         result = 'Legitimate';
+%     else
+%         result = 'Malicious';
+%     end
+%     
+%     % Tampilan Hasil
+%     disp(['Node A adalah ' result]);
 
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
