@@ -514,26 +514,15 @@ for i = 1:length(Data_t)
     
     % Simulasikan pengiriman RREQ dari node sumber ke node tujuan
     disp(['Node ' num2str(rreq_src) ' sends RREQ to node ' num2str(rreq_dest)]);
-    % Pada aplikasi nyata, Anda akan mengirim pesan ke jaringan nirkabel di sini.
     
     % Penerima RREQ (node tujuan) memeriksa pesan RREQ
     if rreq_dest == d
         % Jika node penerima adalah node tujuan RREQ, maka proses pesan RREQ.
         if rreq_packet.id > rreq_hops(rreq_packet.src)
-            % Periksa nomor identifikasi RREQ untuk menghindari duplikasi.
-            % Jika RREQ memiliki nomor identifikasi lebih besar, proses RREQ.
             rreq_hops(rreq_packet.src) = rreq_packet.id;
-    
-            % Kirim RREP sebagai tanggapan ke node sumber.
-            % Ini juga melibatkan perhitungan dan pengiriman RREP.
-            % Namun, RREP akan ditambahkan setelah RREQ selesai.
         end
     else
-        % Jika node penerima bukan tujuan, meneruskan RREQ ke node tetangga yang sesuai.
-        % Ini melibatkan proses pengiriman pesan RREQ ke tetangga.
-        % Anda harus memiliki data koneksi atau daftar tetangga untuk ini.
         disp(['Node ' num2str(rreq_dest) ' forwards RREQ to its neighbors']);
-        % Pada aplikasi nyata, Anda akan mengirim pesan ke tetangga yang sesuai.
     end
     
     current_node = 50; % Inisialisasi node saat ini dengan node tujuan (node 50)
