@@ -90,3 +90,103 @@ disp('Node 1');
  for i = count:-1:1
     disp(['Mengirimkan pesan ke node ' num2str(route(i))]);
  end
+
+====================================================================
+
+
+
+%     % AODV Routing Algorithm Simulation
+%     x = 1:20;
+%     s1 = x(1);
+%     d1 = x(20);
+%     
+%     % Initialize distance matrix representing distances between nodes
+%     xy_array = rand(20);
+%     for i = 1:20
+%         for j = 1:20
+%             if i == j
+%                 xy_array(i, j) = 0;
+%             else
+%                 xy_array(j, i) = xy_array(i, j);
+%             end
+%         end
+%     end
+%     
+%     t = 1:20;
+%     
+%     status(1) = '!';
+%     dist(2) = 0;
+%     next(1) = 0;
+%     
+%     for i = 2:20
+%         status(i) = '?';
+%         dist(i) = xy_array(i, 1);
+%         next(i) = 1;
+%     end
+%     
+%     flag = 0;
+%     
+%     % Check if Node 1 can directly reach Node 20
+%     for i = 2:20
+%         if xy_array(1, i) == 1
+%             disp(['Node 1 sends RREQ to node ' num2str(i)]);
+%             if i == 20 && xy_array(1, i) == 1
+%                 flag = 1;
+%             end
+%         end
+%     end
+%     
+%     disp(['Flag = ' num2str(flag)]);
+%     
+%     while (1)
+%         if flag == 1
+%             break;
+%         end
+%         temp = 0;
+%     
+%         % Find the node with the smallest distance
+%         for i = 1:20
+%             if status(i) == '?'
+%                 D = dist(i);
+%                 vert = i;
+%                 break;
+%             end
+%         end
+%     
+%         for i = 1:20
+%             if D > dist(i) && status(i) == '?'
+%                 D = dist(i);
+%                 vert = i;
+%             end
+%         end
+%     
+%         status(vert) = '!';
+%     
+%         for i = 1:20
+%             if status() == '!'
+%                 temp = temp + 1;
+%             end
+%         end
+%     
+%         if temp == 20
+%             break;
+%         end
+%     end
+%     
+%     i = 20;
+%     count = 1;
+%     route(count) = 20;
+%     
+%     while next(i) ~= 1
+%         disp(['Node ' num2str(i) ' sends RREP message to node ' num2str(next(i))]);
+%         i = next(i);
+%         count = count + 1;
+%         route(count) = i;
+%     end
+%     
+%     disp([ 'Node ' num2str(i) ' sends RREP to node 1']);
+%     disp('Node 1');
+%     
+%     for i = count: -1:1
+%         disp([ 'Sends message to node ' num2str(route(i))]);
+%     end
