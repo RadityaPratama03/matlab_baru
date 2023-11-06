@@ -1,4 +1,4 @@
-filename = 'Hsimulasicut.xlsx';
+filename = 'Hsimulasi.xlsx';
 sheet = 'Sheet2';
 data = readtable(filename, 'Sheet', sheet);
 
@@ -433,7 +433,7 @@ for i = 1:length(Data_t)
             line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
         end
     end
-    
+
     xi = x;
     yi = y;
     id = d;
@@ -442,60 +442,58 @@ for i = 1:length(Data_t)
     s1 = {xi, yi, id};
     
     % Menghitung min_d1
-    min_d1 = zeros(1, numel(s1) - 1);  % Inisialisasi array min_d1
-    for i = 2:numel(s1)
-        min_d1(i - 1) = sqrt((xi(i) - xi(i-1))^2 + (yi(i) - yi(i-1))^2);
+    min_d1 = zeros(1, length(s1)-1);  % Inisialisasi array min_d1
+    for i = 2:numel(s1)  % Mulai dari 2 karena kita menghitung dari elemen kedua
+        min_d1 = sqrt((xi(i) - xi(i-1))^2 + (yi(i) - yi(i-1))^2);
     end
-    
+
     % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
     for j = 1:length(Data_l)
         idx_l = idx & strcmp(l, Data_l(j));
-        xi_l = x(idx_l);
-        yi_l = y(idx_l);
-        
+        xi = x(idx_l);
+        yi = y(idx_l);
+
         % Menggambar garis yang menghubungkan titik terdekat
-        for k = 1:length(xi_l) - 1
+        for k = 1:length(s1)-1
             % Menghitung jarak antara dua titik
-            distance2 = min_d1(k);
-        
+            min_d1(k) = sqrt((xi(k+1) - xi(k))^2 + (yi(k+1) - yi(k))^2);
+
             % Memilih warna berdasarkan jarak
             if distance2 <= 30
-                line_color = 'green'; % Warna hijau untuk jarak <= 30 meter
+                min_d1 = 'green'; % Warna hijau untuk jarak <= 30 meter
             elseif distance2 <= 50
-                line_color = 'red'; % Warna merah untuk jarak <= 50 meter
+                min_d1 = 'red'; % Warna merah untuk jarak <= 50 meter
             end
-        
+
             % Menggambar garis dengan warna yang sesuai
-            line1 = plot([xi_l(k), xi_l(k+1)], [yi_l(k), yi_l(k+1)], '--', 'Color', line_color);
+            line1 = plot([xi(k), xi(k+1)], [yi(k), yi(k+1)], '--', 'Color', line_color);
         end
-        
+
         % Menghitung jarak antara titik dengan RSU
-        distance_to_rsu = sqrt((xi_l - rsu_x).^2 + (yi_l - rsu_y).^2);
+        distance_to_rsu = sqrt((xi - rsu_x).^2 + (yi - rsu_y).^2);
         idx_rsu = distance_to_rsu <= 30;
-        
+
         % Menggambar garis yang menghubungkan titik dengan RSU
-        for k = 1:length(xi_l(idx_rsu))
-            line1 = plot([xi_l(idx_rsu(k)), rsu_x], [yi_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
+        for k = 1:length(xi(idx_rsu))
+            line1 = plot([xi(idx_rsu(k)), rsu_x], [yi(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
         end
     end
-
-
     
-    % Matriks s1
+    % Matriks xy_array
     t = 20; % Ganti sesuai kebutuhan
-    s1 = zeros(t); % Membuat matriks t x t dengan semua elemen 0
+    xy_array = zeros(t); % Membuat matriks t x t dengan semua elemen 0
     
     for i = 1:t
         for j = 1:t
             if i == j
-                s1(i, j) = 0;
+                xy_array(i, j) = 0;
             else
-                s1(i, j) = s1(j, i);
+                xy_array(i, j) = xy_array(j, i);
             end
         end
     end
     
-    disp(s1);
+    disp(xy_array);
     
     t = 1:20;
     disp(t);
@@ -510,7 +508,7 @@ for i = 1:length(Data_t)
     
     for i = 2:20
         status{i} = '?';       % Inisialisasi status node-node lain
-        dist(i) = s1(i, 1);  % Inisialisasi jarak awal
+        dist(i) = xy_array(i, 1);  % Inisialisasi jarak awal
     end
     
     flag = 0;
@@ -518,11 +516,11 @@ for i = 1:length(Data_t)
     rreq_route_count = 1;
     
     for i = 2:20
-        if s1(1, i) == 1
+        if xy_array(1, i) == 1
             disp([' Node 1 sends RREQ to node ' num2str(i)]);
             rreq_route_count = rreq_route_count + 1;
             rreq_route(rreq_route_count) = i;
-            if i == 20 && s1(1, i) == 1
+            if i == 20 && xy_array(1, i) == 1
                 flag = 1;
             end
         end
@@ -568,13 +566,13 @@ for i = 1:length(Data_t)
     
         for i = 2:20
             next(i) = 0;  % Inisialisasi node-node lainnya
-            if s1(vert, i) == 1 && strcmp(status{i}, '?')
+            if xy_array(vert, i) == 1 && strcmp(status{i}, '?')
                 disp([' Node ' num2str(vert) ' sends RREQ to node ' num2str(i)]);
                 rreq_route_count = rreq_route_count + 1;
                 rreq_route(rreq_route_count) = i;
                 % Perbarui jarak dan node selanjutnya jika menemukan rute yang lebih baik
-                if D + s1(vert, i) < dist(i)
-                    dist(i) = D + s1(vert, i);
+                if D + xy_array(vert, i) < dist(i)
+                    dist(i) = D + xy_array(vert, i);
                     next(i) = vert;
                 end
             end

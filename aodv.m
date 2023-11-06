@@ -1,13 +1,28 @@
+filename = 'Hsimulasicut.xlsx';
+sheet = 'Sheet2';
+data = readtable(filename, 'Sheet', sheet);
+
+t = data.time;
+x = data.x;
+y = data.y;
+l = data.lane;
+p = data.type;
+a = data.angle;
+s = data.speed;
+d = data.id;
+
+
 xi = x;
 yi = y;
+id = d;
 
 % Menghitung s1
-s1 = [xi(1), yi(1)];
+s1 = {xi, yi, id};
 
 % Menghitung min_d1
-min_d1 = zeros(size(xi));  % Inisialisasi array min_d1
-for i = 2:numel(xi)  % Mulai dari 2 karena kita menghitung dari elemen kedua
-    min_d1(i) = sqrt((xi(i) - xi(i-1))^2 + (yi(i) - yi(i-1))^2);
+min_d1 = zeros(size(s1));  % Inisialisasi array min_d1
+for i = 2:numel(s1)  % Mulai dari 2 karena kita menghitung dari elemen kedua
+    min_d1 = sqrt((xi(i) - xi(i-1))^2 + (yi(i) - yi(i-1))^2);
 end
 
 % Matriks xy_array
@@ -34,8 +49,8 @@ dist = zeros(1, 20);   % Jarak awal
 next = ones(1, 20);    % Inisialisasi seluruh next ke 1
 
 status{1} = '!';  % Inisialisasi status node 1
-dist(1) = 0;      % Inisialisasi jarak node 1
-next(1) = 0;      % Inisialisasi node selanjutnya node 1
+dist(1) = 1;      % Inisialisasi jarak node 1
+next(1) = 1;      % Inisialisasi node selanjutnya node 1
 
 for i = 2:20
     status{i} = '?';       % Inisialisasi status node-node lain
@@ -44,7 +59,7 @@ end
 
 flag = 0;
 rreq_route = zeros(1, 20);  % Rute untuk RREQ
-rreq_route_count = 0;
+rreq_route_count = 1;
 
 for i = 2:20
     if xy_array(1, i) == 1
