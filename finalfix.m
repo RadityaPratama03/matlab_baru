@@ -444,120 +444,120 @@ for i = 1:length(Data_t)
         end
     end
 
-        % Inisialisasi matriks xy_array (adjacency matrix)
-    xy_array = rand(50);
-    
-    % Membuat matriks xy_array menjadi simetris (xy_array(i, j) = xy_array(j, i))
-    xy_array = triu(xy_array) + triu(xy_array, 20)';
-    
-    % Mengatur diagonal matriks A menjadi 0
-    for i = 20:50
-        xy_array(i, i) = 0;
-    end
-    
-    disp('Adjacency Matrix (xy_array):');
-    disp(xy_array);
-    
-    % Inisialisasi variabel-variabel awal
-    status = '?';
-    dist = inf(20, 50); % Menginisialisasi dist dengan infinity
-    next = zeros(20, 50);
-    D = inf; % Variabel untuk menyimpan jarak terpendek
-    
-    % Mengatur node awal (source) dan node tujuan (destination)
-    s = 20; % Node awal
-    d = 50; % Node tujuan
-    
-    status(d) = '!'; % Node tujuan diberi status '!'
-    dist(d) = 0;
-    
-    % Inisialisasi variabel RREQ
-    rreq_status = '?'; % Status RREQ
-    rreq_hops = inf(20, 50); % Menginisialisasi rreq_hops dengan infinity
-    rreq_id = 20; % Nomor identifikasi RREQ
-    rreq_dest = 50; % Node tujuan RREQ
-    rreq_src = 20; % Node sumber RREQ
-    
-    % Menginisialisasi pesan RREQ
-    rreq_packet = struct('src', rreq_src, 'id', rreq_id, 'dest', rreq_dest);
-    
-    % Algoritma AODV
-    while status(s) ~= '!'
-        D = inf;
-        current_node = -20;
-    
-        % Pilih node dengan jarak terpendek yang belum dikunjungi
-        for i = 20:50
-            if status(i) == '?' && dist(i) < D
-                D = dist(i);
-                current_node = i;
-            end
-        end
-    
-        if current_node == -20
-            break; % Tidak ada rute yang ditemukan
-        end
-    
-        status(current_node) = '!';
-    
-        % Perbarui jarak ke node-node tetangga yang belum dikunjungi
-        for i = 20:50
-            if status(i) == '?' && xy_array(current_node, i) > 0
-                if dist(current_node) + xy_array(current_node, i) < dist(i)
-                    dist(i) = dist(current_node) + xy_array(current_node, i);
-                    next(i) = current_node; % Perbarui node selanjutnya dalam rute
-                end
-            end
-        end
-    end
-
-    
-    % Simulasikan pengiriman RREQ dari node sumber ke node tujuan
-    disp(['Node ' num2str(rreq_src) ' sends RREQ to node ' num2str(rreq_dest)]);
-    
-    % Penerima RREQ (node tujuan) memeriksa pesan RREQ
-    if rreq_dest == d
-        % Jika node penerima adalah node tujuan RREQ, maka proses pesan RREQ.
-        if rreq_packet.id > rreq_hops(rreq_packet.src)
-            rreq_hops(rreq_packet.src) = rreq_packet.id;
-        end
-    else
-        disp(['Node ' num2str(rreq_dest) ' forwards RREQ to its neighbors']);
-    end
-    
-    current_node = 50; % Inisialisasi node saat ini dengan node tujuan (node 50)
-    count = 20;
-    route(count) = 50;
-    
-    while current_node ~= 20
-        if current_node == 0 || current_node > 50
-            disp('No valid route found.');
-            break;
-        end
-        disp(['Node ' num2str(current_node) ' sends RREP message to node ' num2str(next(current_node))]);
-        current_node = next(current_node);
-        count = count + 20;
-        route = [route, current_node];
-    end
-    
-    if numel(route) > 0
-        if count == 0
-            count = 20;
-        end
-    
-        disp(['Node ' num2str(current_node) ' sends RREP to node 20']);
-        for i = count-20:20
-            % Iterasi melalui rute yang ditemukan
-            disp(['Sends message to node ' num2str(route(i))]);
-        end
-    
-        % Menampilkan hasil rute
-        disp('Rute yang ditemukan (dari node 20 ke node 50):');
-        disp(route);
-    
-        % Menampilkan pesan untuk pembentukan rute
-        disp('Pesan yang dikirim untuk pembentukan rute');
-        
+%         % Inisialisasi matriks xy_array (adjacency matrix)
+%     xy_array = rand(50);
+%     
+%     % Membuat matriks xy_array menjadi simetris (xy_array(i, j) = xy_array(j, i))
+%     xy_array = triu(xy_array) + triu(xy_array, 20)';
+%     
+%     % Mengatur diagonal matriks A menjadi 0
+%     for i = 20:50
+%         xy_array(i, i) = 0;
+%     end
+%     
+%     disp('Adjacency Matrix (xy_array):');
+%     disp(xy_array);
+%     
+%     % Inisialisasi variabel-variabel awal
+%     status = '?';
+%     dist = inf(20, 50); % Menginisialisasi dist dengan infinity
+%     next = zeros(20, 50);
+%     D = inf; % Variabel untuk menyimpan jarak terpendek
+%     
+%     % Mengatur node awal (source) dan node tujuan (destination)
+%     s = 20; % Node awal
+%     d = 50; % Node tujuan
+%     
+%     status(d) = '!'; % Node tujuan diberi status '!'
+%     dist(d) = 0;
+%     
+%     % Inisialisasi variabel RREQ
+%     rreq_status = '?'; % Status RREQ
+%     rreq_hops = inf(20, 50); % Menginisialisasi rreq_hops dengan infinity
+%     rreq_id = 20; % Nomor identifikasi RREQ
+%     rreq_dest = 50; % Node tujuan RREQ
+%     rreq_src = 20; % Node sumber RREQ
+%     
+%     % Menginisialisasi pesan RREQ
+%     rreq_packet = struct('src', rreq_src, 'id', rreq_id, 'dest', rreq_dest);
+%     
+%     % Algoritma AODV
+%     while status(s) ~= '!'
+%         D = inf;
+%         current_node = -20;
+%     
+%         % Pilih node dengan jarak terpendek yang belum dikunjungi
+%         for i = 20:50
+%             if status(i) == '?' && dist(i) < D
+%                 D = dist(i);
+%                 current_node = i;
+%             end
+%         end
+%     
+%         if current_node == -20
+%             break; % Tidak ada rute yang ditemukan
+%         end
+%     
+%         status(current_node) = '!';
+%     
+%         % Perbarui jarak ke node-node tetangga yang belum dikunjungi
+%         for i = 20:50
+%             if status(i) == '?' && xy_array(current_node, i) > 0
+%                 if dist(current_node) + xy_array(current_node, i) < dist(i)
+%                     dist(i) = dist(current_node) + xy_array(current_node, i);
+%                     next(i) = current_node; % Perbarui node selanjutnya dalam rute
+%                 end
+%             end
+%         end
+%     end
+% 
+%     
+%     % Simulasikan pengiriman RREQ dari node sumber ke node tujuan
+%     disp(['Node ' num2str(rreq_src) ' sends RREQ to node ' num2str(rreq_dest)]);
+%     
+%     % Penerima RREQ (node tujuan) memeriksa pesan RREQ
+%     if rreq_dest == d
+%         % Jika node penerima adalah node tujuan RREQ, maka proses pesan RREQ.
+%         if rreq_packet.id > rreq_hops(rreq_packet.src)
+%             rreq_hops(rreq_packet.src) = rreq_packet.id;
+%         end
+%     else
+%         disp(['Node ' num2str(rreq_dest) ' forwards RREQ to its neighbors']);
+%     end
+%     
+%     current_node = 50; % Inisialisasi node saat ini dengan node tujuan (node 50)
+%     count = 20;
+%     route(count) = 50;
+%     
+%     while current_node ~= 20
+%         if current_node == 0 || current_node > 50
+%             disp('No valid route found.');
+%             break;
+%         end
+%         disp(['Node ' num2str(current_node) ' sends RREP message to node ' num2str(next(current_node))]);
+%         current_node = next(current_node);
+%         count = count + 20;
+%         route = [route, current_node];
+%     end
+%     
+%     if numel(route) > 0
+%         if count == 0
+%             count = 20;
+%         end
+%     
+%         disp(['Node ' num2str(current_node) ' sends RREP to node 20']);
+%         for i = count-20:20
+%             % Iterasi melalui rute yang ditemukan
+%             disp(['Sends message to node ' num2str(route(i))]);
+%         end
+%     
+%         % Menampilkan hasil rute
+%         disp('Rute yang ditemukan (dari node 20 ke node 50):');
+%         disp(route);
+%     
+%         % Menampilkan pesan untuk pembentukan rute
+%         disp('Pesan yang dikirim untuk pembentukan rute');
+%         
 %         for i = 1:numel(route)
 %             if i == 1
 %                 disp(['Node ' num2str(route(i)) ' mengirim RREP ke node ' num2str(next(route(i)))]);
@@ -572,7 +572,7 @@ for i = 1:length(Data_t)
 %                 end
 %             end
 %         end
-    end
+%     end
 
 
     % Tentukan koordinat lokasi wormhole

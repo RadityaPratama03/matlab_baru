@@ -9,7 +9,7 @@ l = data.lane;
 p = data.type;
 a = data.angle;
 s = data.speed;
-d = data.id;
+r = data.id;
 
 K = 30; % Konstanta berbeda setiap lingkungan
 
@@ -61,6 +61,7 @@ hold on;
 Data_t = unique(t);
 Data_p = unique(p);
 Data_l = unique(l);
+z = [];
 xy_array = [];
 traceCount = [];
 reachableDuration = [];
@@ -72,6 +73,7 @@ for i = 1:length(Data_t)
     xy_array = [x(idx), y(idx)];
     distance1 = sqrt((xy_array(:, 1).^2) + (xy_array(:, 2).^2));
 
+    
     % Memisahkan data berdasarkan jenis kendaraan
     idx_mobil = idx & strcmp(p, 'mobil');
     idx_taxi = idx & strcmp(p, 'taxi');
@@ -253,11 +255,11 @@ for i = 1:length(Data_t)
     % Menambahkan data speed ke dalam data_xy_angle
     data_xy_angle_speed = [x(idx), y(idx), normalized_angle(idx), normalized_speed(idx)];
     
-    % Tambahkan label untuk data speed
-    speed_label = cell(size(data, 1), 1);
-    for i = 1:size(data, 1)
-        speed_label{i} = sprintf('  %.2f  ', data_speed(i));
-    end
+%     % Tambahkan label untuk data speed
+%     speed_label = cell(size(data, 1), 1);
+%     for i = 1:size(data, 1)
+%         speed_label{i} = sprintf('  %.2f  ', data_speed(i));
+%     end
    
     % Menambahkan clustering K-Medoids 
     data_xy_angle = [x(idx), y(idx), normalized_angle(idx)]; % Menggabungkan data x, data y, dan data angle yang sudah dinormalisasikan
@@ -434,238 +436,93 @@ for i = 1:length(Data_t)
         end
     end
     
-    xi = x;
+    % Memasukkan data ke dalam variabel xi, yi, id, dan t
+    xi = x; 
     yi = y;
-    id = d;
+    id = r;
+    ti = t;
     
-    % Menghitung s1
-    s1 = {xi, yi, id};
+    % Menggabungkan data ke dalam satu tabel
+    data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
+    
+    % Sel untuk menyimpan data pada setiap waktu
+    selectedDataCell = cell(0, 100); % Sesuaikan dengan jumlah waktu yang diinginkan, misalnya, 100
+    
+    % Iterasi untuk setiap nilai t dari 0 hingga 100
+    for t = 0:100
+        % Mencari data yang sesuai dengan nilai t pada tabel
+        data_t = data_table(data_table.t == t, :);
+    
+    %     % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
+    %     selectedData = zeros(height(data_table), 3);
+    
+        % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
+        selectedData = zeros(1, 3);
+    
+        % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
+        if ~isempty(data_t)
+            % Jika t bukan 0, pindahkan data ke baris pertama
+            if t > 0
+                selectedData(1:size(data_t, 1), :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
+            else
+                selectedData(data_table.t == t, :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
+            end
+        end
+        
+        % Menetapkan nilai 0 untuk baris berikutnya setelah t sekian
+        selectedData(data_table.t > t, :) = 0;
+    
+        % Menyimpan hasil pada sel yang sesuai dengan nilai t
+        selectedDataCell{1} = selectedData;
+    end
+    
+    % Menghitung d polinomial
+    d =  t .* (t - 1) / 2;
     
     % Menghitung min_d1
-    min_d1 = zeros(1, numel(s1) - 1);  % Inisialisasi array min_d1
-    for i = 2:numel(s1)
-        min_d1(i - 1) = sqrt((xi(i) - xi(i-1))^2 + (yi(i) - yi(i-1))^2);
+    min_d1 = zeros(size(selectedData, 1), 1);
+    for i = 2:size(selectedData, 1)
+        min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
     end
-    
-    % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
-    for j = 1:length(Data_l)
-        idx_l = idx & strcmp(l, Data_l(j));
-        xi_l = x(idx_l);
-        yi_l = y(idx_l);
-        
-        % Menggambar garis yang menghubungkan titik terdekat
-        for k = 1:length(xi_l) - 1
-            % Menghitung jarak antara dua titik
-            distance2 = min_d1(k);
-        
-            % Memilih warna berdasarkan jarak
-            if distance2 <= 30
-                line_color = 'green'; % Warna hijau untuk jarak <= 30 meter
-            elseif distance2 <= 50
-                line_color = 'red'; % Warna merah untuk jarak <= 50 meter
-            end
-        
-            % Menggambar garis dengan warna yang sesuai
-            line1 = plot([xi_l(k), xi_l(k+1)], [yi_l(k), yi_l(k+1)], '--', 'Color', line_color);
-        end
-        
-        % Menghitung jarak antara titik dengan RSU
-        distance_to_rsu = sqrt((xi_l - rsu_x).^2 + (yi_l - rsu_y).^2);
-        idx_rsu = distance_to_rsu <= 30;
-        
-        % Menggambar garis yang menghubungkan titik dengan RSU
-        for k = 1:length(xi_l(idx_rsu))
-            line1 = plot([xi_l(idx_rsu(k)), rsu_x], [yi_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
-        end
-    end
-
-
-    
-    % Matriks s1
-    t = 20; % Ganti sesuai kebutuhan
-    s1 = zeros(t); % Membuat matriks t x t dengan semua elemen 0
-    
-    for i = 1:t
-        for j = 1:t
-            if i == j
-                s1(i, j) = 0;
-            else
-                s1(i, j) = s1(j, i);
-            end
-        end
-    end
-    
-    disp(s1);
-    
-    t = 1:20;
-    disp(t);
-    
-    status = cell(1, 20);  % Gunakan cell array untuk status
-    dist = zeros(1, 20);   % Jarak awal
-    next = ones(1, 20);    % Inisialisasi seluruh next ke 1
-    
-    status{1} = '!';  % Inisialisasi status node 1
-    dist(1) = 1;      % Inisialisasi jarak node 1
-    next(1) = 1;      % Inisialisasi node selanjutnya node 1
-    
-    for i = 2:20
-        status{i} = '?';       % Inisialisasi status node-node lain
-        dist(i) = s1(i, 1);  % Inisialisasi jarak awal
-    end
-    
-    flag = 0;
-    rreq_route = zeros(1, 20);  % Rute untuk RREQ
-    rreq_route_count = 1;
-    
-    for i = 2:20
-        if s1(1, i) == 1
-            disp([' Node 1 sends RREQ to node ' num2str(i)]);
-            rreq_route_count = rreq_route_count + 1;
-            rreq_route(rreq_route_count) = i;
-            if i == 20 && s1(1, i) == 1
-                flag = 1;
-            end
-        end
-    end
-    
-    disp(['Flag = ' num2str(flag)]);
-    for vert = 1:20
-        if flag == 1
-            break;
-        end
-        
-        temp = 0;
-    
-        % Menemukan node dengan status '?'
-        for i = 1:20
-            if strcmp(status{i}, '?')
-                D = dist(i);  % Salah, seharusnya D diinisialisasi di sini
-                vert = i;
-                break;
-            end
-        end
-    
-        % Memeriksa node lain dengan status '?' dan jarak minimum
-        for i = 1:20
-            if strcmp(status{i}, '?') && dist(i) < D
-                D = dist(i);
-                vert = i;
-            end
-        end
-    
-        status{vert} = '!';
-    
-        % Menghitung berapa banyak node yang statusnya '!'
-        for i = 1:20
-            if strcmp(status{i}, '!')
-                temp = temp + 1;
-            end
-        end
-    
-        if temp == 20
-            break;
-        end
-    
-        for i = 2:20
-            next(i) = 0;  % Inisialisasi node-node lainnya
-            if s1(vert, i) == 1 && strcmp(status{i}, '?')
-                disp([' Node ' num2str(vert) ' sends RREQ to node ' num2str(i)]);
-                rreq_route_count = rreq_route_count + 1;
-                rreq_route(rreq_route_count) = i;
-                % Perbarui jarak dan node selanjutnya jika menemukan rute yang lebih baik
-                if D + s1(vert, i) < dist(i)
-                    dist(i) = D + s1(vert, i);
-                    next(i) = vert;
-                end
-            end
-        end
-    end
-    
-    % Membuat array untuk menyimpan rute
-    route = zeros(1, 20);
-    
-    % Menemukan rute dari node 1 ke node 20
-    count = 1;
-    i = 1; % Mulai dari node 1
-    
-    while i ~= 20
-        route(count) = i;
-        
-        % Mencari node selanjutnya dalam rute
-        i = next(i);
-        
-        count = count + 1;
-        
-        if i == 0
-            disp('Tidak ditemukan rute ke node tujuan.');
-            break;
-        end
-    end
-    
-    % Menambahkan node 20 ke rute RREP
-    route(count) = 20;
-    
-    % Menampilkan rute dalam urutan yang diinginkan
-    disp('Rute yang diinginkan:');
-    for j = 1:count
-        disp(['Node ' num2str(route(j))]);
-    end
-    
-    route(count + 1) = 1;  % Menambahkan node 1 ke rute RREP
-    
-    disp(' Node 1 ');
-    for i = count + 1: -1:1
-        disp([ ' Sends message to node ' num2str(route(i))]);
-    end
-    
-    % Menampilkan rute RREQ
-    disp('Rute RREQ:');
-    for i = 1:rreq_route_count
-        disp([' Node ' num2str(rreq_route(i))]);
-    end
-    
-    % Menampilkan rute RREP
-    disp('Rute RREP:');
-    for i = count + 1:-1:1
-        disp([' Node ' num2str(route(i))]);
-    end
-
-    
-    % Tentukan koordinat lokasi wormhole
-    lokasi_x1 = 100; 
-    lokasi_x2 = 200; 
-    lokasi_y1 = 50;  
-    lokasi_y2 = 60; 
-
-    % Menambahkan elemen visualisasi untuk serangan wormhole
-    x_wormhole = [lokasi_x1, lokasi_x2]; 
-    y_wormhole = [lokasi_y1, lokasi_y2]; 
-    plot(x_wormhole, y_wormhole, 'x', 'MarkerSize', 10, 'MarkerEdgeColor', 'black', 'LineWidth', 2);
-    
-    % Menambahkan label atau teks untuk menunjukkan wormhole
-    text(x_wormhole(1), y_wormhole(1), 'WH 1', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
-    text(x_wormhole(2), y_wormhole(2), 'WH 2', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'bottom');
- 
-%     % Tentukan neighborhoods dari node A dan B
-%     NA1 = [1, 2, 3]; 
-%     NA2 = [2, 4, 5];  
-%     NB1 = [3, 6, 7]; 
-%     NB2 = [2, 8, 9]; 
+%     % Memasukkan data ke dalam variabel xi, yi, id, dan t
+%     xi = x; 
+%     yi = y;
+%     id = r;
+%     ti = t;
+% 
+%     % Menggabungkan data ke dalam satu tabel
+%     data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
 %     
-%     % Inisialisasi variabel untuk menyimpan hasil
-%     result = 'belum ditentukan';
+%     % Membuat sel untuk menyimpan data pada setiap waktu
+%     selectedDataCell = cell(1, max(data_table.t) + 1);
 %     
-%     % Cek jika N(A)1 ∩ N(B)1
-%     if any(ismember(NA1, NB1))
-%         result = 'Legitimate';
-%     elseif any(ismember(NA1, NB2))
-%         result = 'Legitimate';
-%     else
-%         result = 'Malicious';
+%     % Iterasi untuk setiap nilai t
+%     for t = 0:max(data_table.t)
+%         % Membuat matriks zeros dengan ukuran sesuai jumlah baris di data
+%         selectedData = zeros(height(data_table), 3);
+%     
+%         % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
+%         selectedData(data_table.t == t, :) = [str2double(strrep(data_table.id(data_table.t == t), 'f_', '')), data_table.xi(data_table.t == t), data_table.yi(data_table.t == t)];
+%     
+%         % Menetapkan nilai 0 untuk baris berikutnya setelah t = 3
+%         selectedData(data_table.t > t, :) = 0;
+%     
+%         % Menyimpan hasil pada sel yang sesuai dengan nilai t
+%         selectedDataCell{t + 1} = selectedData;
 %     end
+
+%     % Membuat matriks zeros dengan ukuran sesuai jumlah baris di data
+%     selectedData = zeros(size(data, 1), 3);
 %     
-%     % Tampilan Hasil
-%     disp(['Node A adalah ' result]);
+%     % Mengisi matriks dengan nilai dari kolom id, x, dan y ketika t = 3
+%     selectedData(data.time == 0, :) = [str2double(strrep(data.id(data.time == 0), 'f_', '')), data.x(data.time == 0), data.y(data.time == 0)];
+%     
+%     % Menetapkan nilai 0 untuk baris berikutnya setelah t = 3
+%     selectedData(data.time > 3, :) = 0;
+
+
+
+
 
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
