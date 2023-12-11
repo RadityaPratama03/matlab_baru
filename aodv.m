@@ -1,4 +1,4 @@
-filename = 'Hsimulasi.xlsx';
+filename = 'Hsimulasicut.xlsx';
 sheet = 'Sheet2';
 data = readtable(filename, 'Sheet', sheet);
 
@@ -9,7 +9,7 @@ l = data.lane;
 p = data.type;
 a = data.angle;
 s = data.speed;
-r = data.id;
+r = str2double(strrep(data.id, 'f_', ''));
 
 K = 30; % Konstanta berbeda setiap lingkungan
 
@@ -19,47 +19,96 @@ start1 = 1;
 
 Data_t = unique(t);
 Data_p = unique(p);
-Data_l = unique(l); 
+Data_l = unique(l);
+selectedData = [];
 
-% Memasukkan data ke dalam variabel xi, yi, id, dan t
-xi = x; 
-yi = y;
-id = r;
-ti = t;
+% Inisiasi dengan ukuran 3x80
+selectedData = zeros(80, 3);
 
-% Menggabungkan data ke dalam satu tabel
-data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
+% Mengisi elemen dengan data dari x, y, dan r
+selectedData(:, 1) = x(80:-1:1);
+selectedData(:, 2) = y(80:-1:1);
+selectedData(:, 3) = r(80:-1:1);
 
-% Sel untuk menyimpan data pada setiap waktu
-selectedDataCell = cell(0, 100); % Sesuaikan dengan jumlah waktu yang diinginkan, misalnya, 100
+% Inisiasi indeks t
+t = 1;
 
-% Iterasi untuk setiap nilai t dari 0 hingga 100
-for t = 0:90
-    % Mencari data yang sesuai dengan nilai t pada tabel
-    data_t = data_table(data_table.t == t, :);
+% Loop while dengan penambahan indeks t
+while t <= size(selectedData, 1)
+    % Kalkulasi nilai d
+    d = t * (t - 1) / 2;
 
-%     % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
-%     selectedData = zeros(height(data_table), 3);
+    % Menambahkan nilai d, x, y, dan r ke dalam resultMatrix
+    resultMatrix(t, :) = [d, selectedData(t, :)];
 
-    % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
-    selectedData = zeros(1, 3);
-
-    % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
-    if ~isempty(data_t)
-        % Jika t bukan 0, pindahkan data ke baris pertama
-        if t > 0
-            selectedData(1:size(data_t, 1), :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
-        else
-            selectedData(data_table.t == t, :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
-        end
-    end
-    
-    % Menetapkan nilai 0 untuk baris berikutnya setelah t sekian
-    selectedData(data_table.t > t, :) = 0;
-
-    % Menyimpan hasil pada sel yang sesuai dengan nilai t
-    selectedDataCell = selectedData;
+    % Tambahkan indeks t
+    t = t + 1;
 end
+
+% % Loop while dengan penambahan indeks t
+% while t <= length(selectedData)    
+%     % Tambahkan indeks t
+%     t = t + 1;
+% 
+%     % Membuat matrix baru dalam loop
+%     Matrix = zeros(80, 3);
+%     Matrix(:, 1) = x(80:-1:1);
+%     Matrix(:, 2) = y(80:-1:1);
+%     Matrix(:, 3) = r(80:-1:1);
+% 
+%     % Lakukan sesuatu dengan Matrix
+%     disp(Matrix);
+% end
+
+
+% % Memasukkan data ke dalam variabel xi, yi, id, dan t
+% xi = x; 
+% yi = y;
+% id = r;
+% ti = t;
+% 
+% % Menggabungkan data ke dalam satu tabel
+% data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
+% 
+% % Sel untuk menyimpan data pada setiap waktu
+% selectedDataCell = cell(0, 100); % Sesuaikan dengan jumlah waktu yang diinginkan, misalnya, 100
+% 
+% % Iterasi untuk setiap nilai t dari 0 hingga 100
+% for t = 0:100
+%     % Mencari data yang sesuai dengan nilai t pada tabel
+%     data_t = data_table(data_table.t == t, :);
+% 
+% %     % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
+% %     selectedData = zeros(height(data_table), 3);
+% 
+%     % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
+%     selectedData = zeros(1, 3);
+% 
+%     % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
+%     if ~isempty(data_t)
+%         % Jika t bukan 0, pindahkan data ke baris pertama
+%         if t > 0
+%             selectedData(1:size(data_t, 1), :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
+%         else
+%             selectedData(data_table.t == t, :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
+%         end
+%     end
+%     
+%     % Menetapkan nilai 0 untuk baris berikutnya setelah t sekian
+%     selectedData(data_table.t > t, :) = 0;
+% 
+%     % Menyimpan hasil pada sel yang sesuai dengan nilai t
+%     selectedDataCell = selectedData;
+% end
+% 
+% % Menghitung d polinomial
+% d =  t .* (t - 1) / 2;
+% 
+% % Menghitung min_d1
+% min_d1 = zeros(size(selectedData, 1), 1);
+% for i = 2:size(selectedData, 1)
+%     min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
+% end
 
 
 % % Menggabungkan data ke dalam satu tabel
@@ -93,14 +142,7 @@ end
 %     selectedDataCell{t + 1} = selectedData;
 % end
 
-% Menghitung d polinomial
-d =  t .* (t - 1) / 2;
 
-% Menghitung min_d1
-min_d1 = zeros(size(selectedData, 1), 1);
-for i = 2:size(selectedData, 1)
-    min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
-end
 
 % %Code : AODV Routing.
 % x=1:20;

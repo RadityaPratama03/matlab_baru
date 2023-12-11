@@ -9,7 +9,7 @@ l = data.lane;
 p = data.type;
 a = data.angle;
 s = data.speed;
-r = data.id;
+r = str2double(strrep(data.id, 'f_', ''));
 
 K = 30; % Konstanta berbeda setiap lingkungan
 
@@ -61,18 +61,17 @@ hold on;
 Data_t = unique(t);
 Data_p = unique(p);
 Data_l = unique(l);
-z = [];
 xy_array = [];
 traceCount = [];
 reachableDuration = [];
+selectedData = [];
 
 for i = 1:length(Data_t)
     subplot(5, 1, 1);
     cla;
     idx = t == Data_t(i);
-    xy_array = [x(idx), y(idx)];
+    xy_array = [xy_array; x(idx) y(idx)];
     distance1 = sqrt((xy_array(:, 1).^2) + (xy_array(:, 2).^2));
-
     
     % Memisahkan data berdasarkan jenis kendaraan
     idx_mobil = idx & strcmp(p, 'mobil');
@@ -404,86 +403,79 @@ for i = 1:length(Data_t)
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
 
-    % Menghubungkan dua titik koordinat dengan garis berdasarkan nilai unik pada Data_l
-    for j = 1:length(Data_l)
-        idx_l = idx & strcmp(l, Data_l(j));
-        x_l = x(idx_l);
-        y_l = y(idx_l);
-
-        % Menggambar garis yang menghubungkan titik terdekat
-        for k = 1:length(x_l)-1
-            % Menghitung jarak antara dua titik
-            distance2 = sqrt((x_l(k+1) - x_l(k))^2 + (y_l(k+1) - y_l(k))^2);
-
-            % Memilih warna berdasarkan jarak
-            if distance2 <= 30
-                line_color = 'green'; % Warna hijau untuk jarak <= 30 meter
-            elseif distance2 <= 50
-                line_color = 'red'; % Warna merah untuk jarak <= 50 meter
-            end
-
-            % Menggambar garis dengan warna yang sesuai
-            line1 = plot([x_l(k), x_l(k+1)], [y_l(k), y_l(k+1)], '--', 'Color', line_color);
-        end
-
-        % Menghitung jarak antara titik dengan RSU
-        distance_to_rsu = sqrt((x_l - rsu_x).^2 + (y_l - rsu_y).^2);
-        idx_rsu = distance_to_rsu <= 30;
-
-        % Menggambar garis yang menghubungkan titik dengan RSU
-        for k = 1:length(x_l(idx_rsu))
-            line1 = plot([x_l(idx_rsu(k)), rsu_x], [y_l(idx_rsu(k)), rsu_y], '--', 'Color', 'cyan');
-        end
+    % Inisiasi dengan ukuran 3x80
+    selectedData = zeros(80, 3);
+    
+    % Mengisi elemen dengan data dari x, y, dan r
+    selectedData(:, 1) = x(80:-1:1);
+    selectedData(:, 2) = y(80:-1:1);
+    selectedData(:, 3) = r(80:-1:1);
+    
+    % Inisiasi indeks t
+    t = 1;
+    
+    % Loop while dengan penambahan indeks t
+    while t <= size(selectedData, 1)
+        % Kalkulasi nilai d
+        d = t * (t - 1) / 2;
+    
+        % Menambahkan nilai d, x, y, dan r ke dalam resultMatrix
+        resultMatrix(t, :) = [d, selectedData(t, :)];
+    
+        % Tambahkan indeks t
+        t = t + 1;
     end
+
+
     
-    % Memasukkan data ke dalam variabel xi, yi, id, dan t
-    xi = x; 
-    yi = y;
-    id = r;
-    ti = t;
-    
-    % Menggabungkan data ke dalam satu tabel
-    data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
-    
-    % Sel untuk menyimpan data pada setiap waktu
-    selectedDataCell = cell(0, 100); % Sesuaikan dengan jumlah waktu yang diinginkan, misalnya, 100
-    
-    % Iterasi untuk setiap nilai t dari 0 hingga 100
-    for t = 0:100
-        % Mencari data yang sesuai dengan nilai t pada tabel
-        data_t = data_table(data_table.t == t, :);
+%     % Memasukkan data ke dalam variabel xi, yi, id, dan t
+%     xi = x; 
+%     yi = y;
+%     id = r;
+%     ti = t;
+%     
+%     % Menggabungkan data ke dalam satu tabel
+%     data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
+%     
+%     % Sel untuk menyimpan data pada setiap waktu
+%     selectedDataCell = cell(0, 100); % Sesuaikan dengan jumlah waktu yang diinginkan, misalnya, 100
+%     
+%     % Iterasi untuk setiap nilai t dari 0 hingga 100
+%     for t = 0:100
+%         % Mencari data yang sesuai dengan nilai t pada tabel
+%         data_t = data_table(data_table.t == t, :);
     
     %     % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
     %     selectedData = zeros(height(data_table), 3);
     
-        % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
-        selectedData = zeros(1, 3);
-    
-        % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
-        if ~isempty(data_t)
-            % Jika t bukan 0, pindahkan data ke baris pertama
-            if t > 0
-                selectedData(1:size(data_t, 1), :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
-            else
-                selectedData(data_table.t == t, :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
-            end
-        end
-        
-        % Menetapkan nilai 0 untuk baris berikutnya setelah t sekian
-        selectedData(data_table.t > t, :) = 0;
-    
-        % Menyimpan hasil pada sel yang sesuai dengan nilai t
-        selectedDataCell{1} = selectedData;
-    end
-    
-    % Menghitung d polinomial
-    d =  t .* (t - 1) / 2;
-    
-    % Menghitung min_d1
-    min_d1 = zeros(size(selectedData, 1), 1);
-    for i = 2:size(selectedData, 1)
-        min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
-    end
+%         % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
+%         selectedData = zeros(1, 3);
+%     
+%         % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
+%         if ~isempty(data_t)
+%             % Jika t bukan 0, pindahkan data ke baris pertama
+%             if t > 0
+%                 selectedData(1:size(data_t, 1), :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
+%             else
+%                 selectedData(data_table.t == t, :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
+%             end
+%         end
+%         
+%         % Menetapkan nilai 0 untuk baris berikutnya setelah t sekian
+%         selectedData(data_table.t > t, :) = 0;
+%     
+%         % Menyimpan hasil pada sel yang sesuai dengan nilai t
+%         selectedDataCell{1} = selectedData;
+%     end
+%     
+%     % Menghitung d polinomial
+%     d =  t .* (t - 1) / 2;
+%     
+%     % Menghitung min_d1
+%     min_d1 = zeros(size(selectedData, 1), 1);
+%     for i = 2:size(selectedData, 1)
+%         min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
+%     end
 %     % Memasukkan data ke dalam variabel xi, yi, id, dan t
 %     xi = x; 
 %     yi = y;
