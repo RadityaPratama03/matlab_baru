@@ -9,7 +9,8 @@ l = data.lane;
 p = data.type;
 a = data.angle;
 s = data.speed;
-r = str2double(strrep(data.id, 'f_', ''));
+r = data.id;
+% r = str2double(strrep(data.id, 'f_', ''));
 
 K = 30; % Konstanta berbeda setiap lingkungan
 
@@ -20,46 +21,84 @@ start1 = 1;
 Data_t = unique(t);
 Data_p = unique(p);
 Data_l = unique(l);
-selectedData = [];
 
-% Inisiasi dengan ukuran 3x80
-selectedData = zeros(80, 3);
+% Filter data 
+% selectedData = data(ismember(data.type, Data_p), {'id', 'x', 'y' });
+selectedData = data(:, {'id', 'x', 'y'});
 
-% Mengisi elemen dengan data dari x, y, dan r
-selectedData(:, 1) = x(80:-1:1);
-selectedData(:, 2) = y(80:-1:1);
-selectedData(:, 3) = r(80:-1:1);
+% Ukuran selectedData 80
+selectedData = selectedData(1:80, :);
 
 % Inisiasi indeks t
 t = 1;
+
+%Inisialisasi resultTable sebagai tabel
+resultTable = table('Size', [size(selectedData, 1), 4], ...
+    'VariableTypes', {'double', 'string', 'double', 'double'}, ...
+    'VariableNames', {'d', 'id', 'x', 'y'});
 
 % Loop while dengan penambahan indeks t
 while t <= size(selectedData, 1)
     % Kalkulasi nilai d
     d = t * (t - 1) / 2;
 
-    % Menambahkan nilai d, x, y, dan r ke dalam resultMatrix
-    resultMatrix(t, :) = [d, selectedData(t, :)];
+    % Tambahkan nilai d, id, x, dan y ke dalam resultTable
+    resultTable(t, :) = {d, selectedData.id{t}, selectedData.x(t), selectedData.y(t)};
 
     % Tambahkan indeks t
     t = t + 1;
 end
 
-% % Loop while dengan penambahan indeks t
-% while t <= length(selectedData)    
-%     % Tambahkan indeks t
-%     t = t + 1;
-% 
-%     % Membuat matrix baru dalam loop
-%     Matrix = zeros(80, 3);
-%     Matrix(:, 1) = x(80:-1:1);
-%     Matrix(:, 2) = y(80:-1:1);
-%     Matrix(:, 3) = r(80:-1:1);
-% 
-%     % Lakukan sesuatu dengan Matrix
-%     disp(Matrix);
+% % Menghitung min_d1
+% min_d1 = zeros(size(selectedData, 1), 1);
+% for i = 2:size(selectedData, 1)
+%     % Mengakses nilai kolom 'x' dan 'y' dari tabel
+%     x1 = selectedData.x(i);
+%     y1 = selectedData.y(i);
+%     
+%     x2 = selectedData.x(i-1);
+%     y2 = selectedData.y(i-1);
+%     
+%     % Menghitung jarak Euclidean antara dua titik
+%     min_d1(i) = sqrt((x1 - x2)^2 + (y1 - y2)^2);
 % end
 
+% % Inisialisasi resultMatrix sebagai cell array
+% resultMatrix = cell(size(selectedData, 1), 4);
+% 
+% % Loop while dengan penambahan indeks t
+% while t <= size(selectedData, 1)
+%     % Kalkulasi nilai d
+%     d = t * (t - 1) / 2;
+% 
+%     % Menambahkan nilai d, x, y, dan id ke dalam resultMatrix
+%     resultMatrix{t, 1} = d;
+%     resultMatrix{t, 2} = selectedData.id{t};
+%     resultMatrix{t, 3} = selectedData.x(t);
+%     resultMatrix{t, 4} = selectedData.y(t);
+% 
+%     % Tambahkan indeks t
+%     t = t + 1;
+% end
+
+
+% % Loop while dengan penambahan indeks t
+% while t <= size(selectedData, 1)
+%     % Kalkulasi nilai d
+%     d = t * (t - 1) / 2;
+% 
+%     % Menambahkan nilai d, x, y, dan id ke dalam resultMatrix
+%     resultMatrix(t, :) = [d,string(selectedData.id{t}), selectedData.x(t), selectedData.y(t) ];
+% 
+%     % Tambahkan indeks t
+%     t = t + 1;
+% end
+
+% % Menghitung min_d1
+% min_d1 = zeros(size(selectedData, 1), 1);
+% for i = 2:size(selectedData, 1)
+%     min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
+% end
 
 % % Memasukkan data ke dalam variabel xi, yi, id, dan t
 % xi = x; 

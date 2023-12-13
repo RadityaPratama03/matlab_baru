@@ -403,119 +403,28 @@ for i = 1:length(Data_t)
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
 
-    % Inisiasi dengan ukuran 3x80
-    selectedData = zeros(80, 3);
-    
-    % Mengisi elemen dengan data dari x, y, dan r
-    selectedData(:, 1) = x(80:-1:1);
-    selectedData(:, 2) = y(80:-1:1);
-    selectedData(:, 3) = r(80:-1:1);
-    
-    % Inisiasi indeks t
-    t = 1;
-    
-    % Loop while dengan penambahan indeks t
-    while t <= size(selectedData, 1)
-        % Kalkulasi nilai d
-        d = t * (t - 1) / 2;
-    
-        % Menambahkan nilai d, x, y, dan r ke dalam resultMatrix
-        resultMatrix(t, :) = [d, selectedData(t, :)];
-    
-        % Tambahkan indeks t
-        t = t + 1;
-    end
-
-
-    
-%     % Memasukkan data ke dalam variabel xi, yi, id, dan t
-%     xi = x; 
-%     yi = y;
-%     id = r;
-%     ti = t;
+%     % Filter data 
+%     % selectedData = data(ismember(data.type, Data_p), {'id', 'x', 'y' });
+%     selectedData = data(:, {'id', 'x', 'y'});
 %     
-%     % Menggabungkan data ke dalam satu tabel
-%     data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
+%     % Ukuran selectedData 80
+%     selectedData = selectedData(1:80, :);
 %     
-%     % Sel untuk menyimpan data pada setiap waktu
-%     selectedDataCell = cell(0, 100); % Sesuaikan dengan jumlah waktu yang diinginkan, misalnya, 100
+%     % Inisiasi indeks t
+%     t = 1;
 %     
-%     % Iterasi untuk setiap nilai t dari 0 hingga 100
-%     for t = 0:100
-%         % Mencari data yang sesuai dengan nilai t pada tabel
-%         data_t = data_table(data_table.t == t, :);
-    
-    %     % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
-    %     selectedData = zeros(height(data_table), 3);
-    
-%         % Inisialisasi matriks zeros dengan ukuran sesuai jumlah baris di data
-%         selectedData = zeros(1, 3);
+%     % Loop while dengan penambahan indeks t
+%     while t <= size(selectedData, 1)
+%         % Kalkulasi nilai d
+%         d = t * (t - 1) / 2;
 %     
-%         % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
-%         if ~isempty(data_t)
-%             % Jika t bukan 0, pindahkan data ke baris pertama
-%             if t > 0
-%                 selectedData(1:size(data_t, 1), :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
-%             else
-%                 selectedData(data_table.t == t, :) = [str2double(strrep(data_t.id, 'f_', '')), data_t.xi, data_t.yi];
-%             end
-%         end
-%         
-%         % Menetapkan nilai 0 untuk baris berikutnya setelah t sekian
-%         selectedData(data_table.t > t, :) = 0;
+%         % Menambahkan nilai d, x, y, dan id ke dalam resultMatrix
+%         resultMatrix(t, :) = [d,string(selectedData.id{t}), selectedData.x(t), selectedData.y(t) ];
 %     
-%         % Menyimpan hasil pada sel yang sesuai dengan nilai t
-%         selectedDataCell{1} = selectedData;
+%         % Tambahkan indeks t
+%         t = t + 1;
 %     end
-%     
-%     % Menghitung d polinomial
-%     d =  t .* (t - 1) / 2;
-%     
-%     % Menghitung min_d1
-%     min_d1 = zeros(size(selectedData, 1), 1);
-%     for i = 2:size(selectedData, 1)
-%         min_d1(i) = sqrt((selectedData(i, 2) - selectedData(i-1, 2))^2 + (selectedData(i, 3) - selectedData(i-1, 3))^2);
-%     end
-%     % Memasukkan data ke dalam variabel xi, yi, id, dan t
-%     xi = x; 
-%     yi = y;
-%     id = r;
-%     ti = t;
-% 
-%     % Menggabungkan data ke dalam satu tabel
-%     data_table = table(ti, id, xi, yi, 'VariableNames', {'t', 'id', 'xi', 'yi'});
-%     
-%     % Membuat sel untuk menyimpan data pada setiap waktu
-%     selectedDataCell = cell(1, max(data_table.t) + 1);
-%     
-%     % Iterasi untuk setiap nilai t
-%     for t = 0:max(data_table.t)
-%         % Membuat matriks zeros dengan ukuran sesuai jumlah baris di data
-%         selectedData = zeros(height(data_table), 3);
-%     
-%         % Mengisi matriks dengan nilai dari kolom id, xi, dan yi ketika t = 0 atau t = 1
-%         selectedData(data_table.t == t, :) = [str2double(strrep(data_table.id(data_table.t == t), 'f_', '')), data_table.xi(data_table.t == t), data_table.yi(data_table.t == t)];
-%     
-%         % Menetapkan nilai 0 untuk baris berikutnya setelah t = 3
-%         selectedData(data_table.t > t, :) = 0;
-%     
-%         % Menyimpan hasil pada sel yang sesuai dengan nilai t
-%         selectedDataCell{t + 1} = selectedData;
-%     end
-
-%     % Membuat matriks zeros dengan ukuran sesuai jumlah baris di data
-%     selectedData = zeros(size(data, 1), 3);
-%     
-%     % Mengisi matriks dengan nilai dari kolom id, x, dan y ketika t = 3
-%     selectedData(data.time == 0, :) = [str2double(strrep(data.id(data.time == 0), 'f_', '')), data.x(data.time == 0), data.y(data.time == 0)];
-%     
-%     % Menetapkan nilai 0 untuk baris berikutnya setelah t = 3
-%     selectedData(data.time > 3, :) = 0;
-
-
-
-
-
+    
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
     pause(0.45);
