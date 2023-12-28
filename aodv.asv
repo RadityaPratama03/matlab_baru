@@ -1,4 +1,4 @@
-filename = 'Hsimulasi.xlsx';
+filename = 'Hsimulasicut.xlsx';
 sheet = 'Sheet2';
 data = readtable(filename, 'Sheet', sheet);
 
@@ -23,14 +23,14 @@ Data_p = unique(p);
 Data_l = unique(l);
 
 % Inisialisasi variabel baru dengan zeros
-selectedData = zeros(106, 3);
+selectedData = zeros(80, 3);
 
 % Mengambil 80 baris pertama dari kolom x, y, dan id
-selectedData(:, 1) = data.x(1:106);
-selectedData(:, 2) = data.y(1:106);
+selectedData(:, 1) = data.x(1:80);
+selectedData(:, 2) = data.y(1:80);
 
 % Mengambil angka setelah karakter 'f_'
-id = str2double(extractAfter(data.id(1:106), 'f_'));
+id = str2double(extractAfter(data.id(1:80), 'f_'));
 
 % Mengisi kolom ketiga dari newVariable dengan data numerik
 selectedData(:, 3) = id;
@@ -42,12 +42,6 @@ resultTable = table('Size', [height(data), 5], ...
 
 % Inisialisasi indeks t
 t = 1; % Ubah inisialisasi menjadi 1
-
-% Inisialisasi variabel baru untuk menyimpan data
-groupTableTime = cell(1, 1);
-
-% Maksimum iterasi yang diinginkan
-maxIterations = 106;
 
 while true
     % Kalkulasi nilai d
@@ -67,6 +61,12 @@ while true
         break; % Keluar dari loop jika t melebihi jumlah baris data
     end
 end
+
+% Inisialisasi variabel baru untuk menyimpan data
+groupTableTime = cell(1, 1);
+
+% Maksimum iterasi yang diinginkan
+maxIterations = 80;
 
 for t = 0:100
     % Mengambil data dengan nilai 't' sesuai iterasi
