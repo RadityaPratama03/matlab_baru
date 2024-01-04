@@ -1,4 +1,4 @@
-filename = 'Hsimulasi.xlsx';
+filename = 'Hsimulasicut.xlsx';
 sheet = 'Sheet2';
 data = readtable(filename, 'Sheet', sheet);
 
@@ -23,35 +23,47 @@ Data_p = unique(p);
 Data_l = unique(l);
 
 % Inisialisasi variabel baru dengan zeros
-selectedData = zeros(106, 3);
+selectedData = zeros(80, 3);
 
 % Mengambil 80 baris pertama dari kolom x, y, dan id
-selectedData(:, 1) = data.x(1:106);
-selectedData(:, 2) = data.y(1:106);
+selectedData(:, 1) = data.x(1:80);
+selectedData(:, 2) = data.y(1:80);
 
 % Mengambil angka setelah karakter 'f_'
-id = str2double(extractAfter(data.id(1:106), 'f_'));
+id = str2double(extractAfter(data.id(1:80), 'f_'));
 
 % Mengisi kolom ketiga dari newVariable dengan data numerik
 selectedData(:, 3) = id;
 
-% Membuat variabel baru untuk menyimpan data t per detik
-resultTable = table('Size', [height(data), 5], ...
+% Inisialisasi indeks t
+t = 0;
+
+% Inisialisasi variabel baru untuk menyimpan data
+groupTableTime = cell(100, 1);
+
+% Maksimum iterasi yang diinginkan
+maxIterations = 80;
+
+% Inisialisasi tabel untuk menyimpan hasil
+resultTable = table('Size', [80, 5], ...
     'VariableTypes', {'double', 'double', 'string', 'double', 'double'}, ...
     'VariableNames', {'t', 'd', 'id', 'x', 'y'});
 
-% Inisialisasi indeks t
-t = 1; % Ubah inisialisasi menjadi 1
+while (t + 1) <= maxIterations
+    % Increment t
+    t = t + 1;
 
-% Inisialisasi variabel baru untuk menyimpan data
-groupTableTime = cell(1, 1);
+%     % Kalkulasi nilai d hanya untuk titik tertentu
+%     d = sqrt((data.x(t) - data.x(t- 1)).^2 + (data.y(t) - data.y(t- 1)).^2);
 
-% Maksimum iterasi yang diinginkan
-maxIterations = 106;
-
-while true
     % Kalkulasi nilai d
-    d = t * (t - 1) / 2;
+    if t == 1
+        % Penanganan iterasi pertama
+        d = 0;
+    else
+        % Kalkulasi nilai d hanya untuk titik tertentu
+        d = sqrt((data.x(t) - data.x(t-1)).^2 + (data.y(t) - data.y(t-1)).^2);
+    end
 
     % Menyimpan nilai t, d, id, x, dan y ke dalam resultTable
     resultTable.t(t) = data.time(t);
@@ -60,14 +72,13 @@ while true
     resultTable.x(t) = data.x(t);
     resultTable.y(t) = data.y(t);
 
-    t = t + 1; % Increment t
-
     % Tambahkan kondisi untuk keluar dari loop
-    if t > height(data)
-        break; % Keluar dari loop jika t melebihi jumlah baris data
+    if t >= height(data)
+        break; % Keluar dari loop jika t mencapai atau melebihi jumlah baris data
     end
 end
 
+% Iterasi untuk t = 0 hingga 100
 for t = 0:100
     % Mengambil data dengan nilai 't' sesuai iterasi
     resultTableTime = resultTable(resultTable.t == t, :);
@@ -78,12 +89,104 @@ for t = 0:100
         rowsZero = array2table(zeros(rowsTotal, width(resultTableTime)), 'VariableNames', resultTableTime.Properties.VariableNames);
         resultTableTime = [resultTableTime; rowsZero];
     end
-    
-    % Simpan data groupTableTime
+
+    % Kalkulasi nilai d
+    if t == 0
+        % Penanganan iterasi pertama
+        d = 0;
+    else
+        % Kalkulasi nilai d hanya untuk titik tertentu
+        d = sqrt((data.x(t+1) - data.x(t)).^2 + (data.y(t+1) - data.y(t)).^2);
+    end
+
+    % Menyimpan nilai t, d, id, x, dan y ke dalam resultTableTime
+    resultTableTime.t(t+1) = data.time(t+1);
+    resultTableTime.d(t+1) = d;
+    resultTableTime.id{t+1} = data.id{t+1};
+    resultTableTime.x(t+1) = data.x(t+1);
+    resultTableTime.y(t+1) = data.y(t+1);
+
+    % Simpan resultTableTime ke dalam groupTableTime
     groupTableTime{t+1} = resultTableTime;
+
+    % Jika Anda ingin menggunakan nilai minimum dari d, tambahkan logika yang sesuai di sini
+%     mind = min(d, mind);
 end
 
+% % Iterasi untuk t = 1 hingga 100
+% for t = 0:100
+%     % Mengambil data dengan nilai 't' sesuai iterasi
+%     resultTableTime = resultTable(resultTable.d ~= 0, :);
+%     
+%     % Jika data tidak mencapai 80 baris, tambahkan baris dengan nilai 0
+%     if height(resultTableTime) < maxIterations
+%         rowsTotal = maxIterations - height(resultTableTime);
+%         rowsZero = array2table(zeros(rowsTotal, width(resultTable)), 'VariableNames', resultTable.Properties.VariableNames);
+%         resultTableTime = [resultTableTime; rowsZero];
+%     end
+% 
+%     % Kalkulasi nilai d
+%     if t == 0
+%         % Penanganan iterasi pertama
+%         d = 0;
+%     else
+%         % Kalkulasi nilai d hanya untuk titik tertentu
+%         d = sqrt((data.x(t+1) - data.x(t)).^2 + (data.y(t+1) - data.y(t)).^2);
+%     end
+% 
+%     % Menyimpan nilai d, id, x, dan y ke dalam resultTableTime
+%     resultTableTime.d(t+1) = d;
+%     resultTableTime.id{t+1} = data.id{t+1};
+%     resultTableTime.x(t+1) = data.x(t+1);
+%     resultTableTime.y(t+1) = data.y(t+1);
+% 
+%     % Simpan resultTableTime ke dalam groupTableTime
+%     groupTableTime{t+1} = resultTableTime;
+% 
+%     % Jika Anda ingin menggunakan nilai minimum dari d, tambahkan logika yang sesuai di sini
+%     % mind = min(d, mind);
+% end
 
+    % Kalkulasi nilai d
+%     d = sqrt((data.x(t) - x).^2 + (data.y(t) - y).^2);
+
+%     % Kalkulasi nilai d
+%     d = sqrt((data.x(t) - data.x(t-1)).^2 + (data.y(t) - data.y(t-1)).^2);
+
+
+
+
+%     % Menyimpan nilai t, d, id, x, dan y ke dalam resultTable
+%     resultTable.t(t) = data.time(t);
+%     resultTable.d(t) = d;
+%     resultTable.id{t} = data.id{t};
+%     resultTable.x(t) = data.x(t);
+%     resultTable.y(t) = data.y(t);
+
+% % Membuat variabel baru untuk menyimpan data t per detik
+% resultTable = table('Size', [80, 4], ...
+%     'VariableTypes', {'double', 'string', 'double', 'double'}, ...
+%     'VariableNames', {'d', 'id', 'x', 'y'});
+% 
+% % Inisialisasi indeks t
+% t = 0; % Ubah inisialisasi menjadi 0
+% 
+% % Maksimum iterasi yang diinginkan
+% maxIterations = 80;
+% 
+% while (t + 1) <= maxIterations
+%     % Increment t
+%     t = t + 1;
+% 
+%     % Kalkulasi nilai d
+%     d = t * (t - 1) / 2;
+% 
+%     % Menyimpan nilai d, id, x, dan y ke dalam resultTable
+%     resultTable.d(t) = d;
+%     resultTable.id{t} = data.id{t};
+%     resultTable.x(t) = data.x(t);
+%     resultTable.y(t) = data.y(t);
+% end
 
 
 
