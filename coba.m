@@ -9,7 +9,7 @@ l = data.lane;
 p = data.type;
 a = data.angle;
 s = data.speed;
-r = str2double(strrep(data.id, 'f_', ''));
+r = data.id;
 
 K = 30; % Konstanta berbeda setiap lingkungan
 
@@ -402,28 +402,6 @@ for i = 1:length(Data_t)
     text(rsu_x, rsu_y, 'RSU', 'HorizontalAlignment', 'left')
     plot(rsu_x, rsu_y, 'o', 'MarkerFaceColor', 'cyan');
     hold on;
-
-%     % Filter data 
-%     % selectedData = data(ismember(data.type, Data_p), {'id', 'x', 'y' });
-%     selectedData = data(:, {'id', 'x', 'y'});
-%     
-%     % Ukuran selectedData 80
-%     selectedData = selectedData(1:80, :);
-%     
-%     % Inisiasi indeks t
-%     t = 1;
-%     
-%     % Loop while dengan penambahan indeks t
-%     while t <= size(selectedData, 1)
-%         % Kalkulasi nilai d
-%         d = t * (t - 1) / 2;
-%     
-%         % Menambahkan nilai d, x, y, dan id ke dalam resultMatrix
-%         resultMatrix(t, :) = [d,string(selectedData.id{t}), selectedData.x(t), selectedData.y(t) ];
-%     
-%         % Tambahkan indeks t
-%         t = t + 1;
-%     end
     
     legend('mobil','taxi', 'RSU', 'Location', 'northwest');
 
@@ -447,4 +425,209 @@ for i = 1:length(Data_t)
         
 end
 hold off;
+
+% % Fungsi untuk memproses dan menganalisis data
+% function processedData = processAndAnalyzeData(inputData)
+%     % Inisialisasi variabel baru dengan zeros
+%     selectedData = zeros(80, 3);
+% 
+%     % Mengambil 80 baris pertama dari kolom x, y, dan id
+%     selectedData(:, 1) = inputData.x(1:80);
+%     selectedData(:, 2) = inputData.y(1:80);
+% 
+%     % Mengambil angka setelah karakter 'f_'
+%     id = str2double(extractAfter(inputData.id(1:80), 'f_'));
+% 
+%     % Mengisi kolom ketiga dari selectedData dengan data numerik
+%     selectedData(:, 3) = id;
+% 
+%     % Inisialisasi indeks t
+%     t = 1;
+% 
+%     % Maksimum iterasi yang diinginkan
+%     maxIterations = height(inputData); 
+% 
+%     % Inisialisasi tabel untuk menyimpan hasil
+%     result = table('Size', [80, 5], ...
+%         'VariableTypes', {'double', 'double', 'string', 'double', 'double'}, ...
+%         'VariableNames', {'t', 'd', 'id', 'x', 'y'});
+% 
+%     % Iterasi untuk t + 1 hingga maxIterations dan t <= 80
+%     while t + 1 <= maxIterations 
+%         % Increment t
+%         t = t + 1;
+% 
+%         % Kalkulasi nilai d hanya untuk titik tertentu
+%         d = sqrt((inputData.x(t) - inputData.x(t- 1)).^2 + (inputData.y(t) - inputData.y(t- 1)).^2);
+% 
+%         % Menyimpan nilai t, d, id, x, dan y ke dalam result
+%         result.t(t) = inputData.time(t);
+%         result.d(t) = d;
+%         result.id{t} = inputData.id{t};
+%         result.x(t) = inputData.x(t);
+%         result.y(t) = inputData.y(t);
+%     end
+% 
+%     % Inisialisasi variabel baru untuk menyimpan data
+%     group = table('Size', [100, 1], ...
+%         'VariableTypes', {'cell'}, ...
+%         'VariableNames', {'Result'});
+% 
+%     % Iterasi untuk t = 1 hingga 100
+%     for t = 1:100
+%         % Mengambil data dengan nilai 't' sesuai iterasi
+%         resultTime = result(result.t == t, :);
+% 
+%         % Perhitungan nilai d
+%         if t > 1
+%             d = sqrt((inputData.x(t) - inputData.x(t-1)).^2 + (inputData.y(t) - inputData.y(t-1)).^2);
+%         else
+%             d = 0; 
+%         end
+% 
+%         % Jika data tidak mencapai 80 baris, tambahkan baris dengan nilai 0
+%         if size(resultTime, 1) < 80
+%             rowsTotal = 80 - size(resultTime, 1);
+%             rowsZero = array2table(zeros(rowsTotal, width(resultTime)), 'VariableNames', resultTime.Properties.VariableNames);
+%             resultTime = [resultTime; rowsZero];
+%         end
+% 
+%         % Simpan resultTime ke dalam group
+%         group.Result{t} = resultTime;
+%     end
+% 
+%     % Iterasi untuk t = 1 hingga 100
+%     for t = 1:100
+%         % Mengambil tabel dari dalam cell array
+%         resultTableTime = group.Result{t};
+% 
+%         % Menambahkan kolom warna ke dalam tabel hanya jika d > 0
+%         resultTableTime.color = cell(height(resultTableTime), 1);
+% 
+%         % Temukan indeks baris dengan nilai d terkecil dan terbesar
+%         minD = find(resultTableTime.d == min(resultTableTime.d(resultTableTime.d > 0)), 1, 'first');
+%         maxD = find(resultTableTime.d == max(resultTableTime.d(resultTableTime.d > 0)), 1, 'first');
+% 
+%         % Berikan warna hijau untuk nilai d terkecil jika d > 0
+%         if ~isempty(minD)
+%             resultTableTime.color{minD} = 'green';
+%         end
+% 
+%         % Berikan warna merah untuk nilai d terbesar jika d > 0
+%         if ~isempty(maxD)
+%             resultTableTime.color{maxD} = 'red';
+%         end
+% 
+%         % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
+%         group.Result{t} = resultTableTime;
+%     end
+% 
+%     % Menyimpan hasil yang telah diproses
+%     processedData = group;
+% end
+
+% Inisialisasi variabel baru dengan zeros
+selectedData = zeros(80, 3);
+
+% Mengambil 80 baris pertama dari kolom x, y, dan id
+selectedData(:, 1) = data.x(1:80);
+selectedData(:, 2) = data.y(1:80);
+
+% Mengambil angka setelah karakter 'f_'
+id = str2double(extractAfter(data.id(1:80), 'f_'));
+
+% Mengisi kolom ketiga dari newVariable dengan data numerik
+selectedData(:, 3) = id;
+
+% Inisialisasi indeks t
+t = 1;
+
+% Maksimum iterasi yang diinginkan
+maxIterations = height(data); 
+
+% Inisialisasi tabel untuk menyimpan hasil
+result = table('Size', [80, 5], ...
+    'VariableTypes', {'double', 'double', 'string', 'double', 'double'}, ...
+    'VariableNames', {'t', 'd', 'id', 'x', 'y'});
+
+% while t <= 80 
+% while t + 1 <= maxIterations && t <= 80
+while t + 1 <= maxIterations 
+    % Increment t
+    t = t + 1;
+
+    % Kalkulasi nilai d hanya untuk titik tertentu
+    d = sqrt((data.x(t) - data.x(t- 1)).^2 + (data.y(t) - data.y(t- 1)).^2);
+
+    % Menyimpan nilai t, d, id, x, dan y ke dalam result
+    result.t(t) = data.time(t);
+    result.d(t) = d;
+    result.id{t} = data.id{t};
+    result.x(t) = data.x(t);
+    result.y(t) = data.y(t);
+
+%     % Tambahkan kondisi untuk keluar dari loop
+%     if t >= height(data)
+%         break; 
+%     end
+end
+
+% Inisialisasi variabel baru untuk menyimpan data
+group = table('Size', [100, 1], ...
+    'VariableTypes', {'cell'}, ...
+    'VariableNames', {'Result'});
+
+% Iterasi untuk t = 1 hingga 100
+for t = 1:100
+    % Mengambil data dengan nilai 't' sesuai iterasi
+    resultTime = result(result.t == t, :);
+
+    % Perhitungan nilai d
+    if t > 1
+        d = sqrt((data.x(t) - data.x(t-1)).^2 + (data.y(t) - data.y(t-1)).^2);
+    else
+        d = 0; 
+    end
+    
+    % Jika data tidak mencapai 80 baris, tambahkan baris dengan nilai 0
+    if size(resultTime, 1) < 80
+        rowsTotal = 80 - size(resultTime, 1);
+        rowsZero = array2table(zeros(rowsTotal, width(resultTime)), 'VariableNames', resultTime.Properties.VariableNames);
+        resultTime = [resultTime; rowsZero];
+    end
+
+    % Simpan resultTime ke dalam group
+    group.Result{t} = resultTime;
+end
+
+% Iterasi untuk t = 1 hingga 100
+for t = 1:100
+    % Mengambil tabel dari dalam cell array
+    resultTableTime = group.Result{t};
+
+    % Menambahkan kolom warna ke dalam tabel hanya jika d > 0
+    resultTableTime.color = cell(height(resultTableTime), 1);
+
+    % Temukan indeks baris dengan nilai d terkecil dan terbesar
+    minD = find(resultTableTime.d == min(resultTableTime.d(resultTableTime.d > 0)), 1, 'first');
+    maxD = find(resultTableTime.d == max(resultTableTime.d(resultTableTime.d > 0)), 1, 'first');
+
+    % Berikan warna hijau untuk nilai d terkecil jika d > 0
+    if ~isempty(minD)
+        resultTableTime.color{minD} = 'green';
+    end
+
+    % Berikan warna merah untuk nilai d terbesar jika d > 0
+    if ~isempty(maxD)
+        resultTableTime.color{maxD} = 'red';
+    end
+
+%     % Isi nilai 0 untuk seluruh baris yang tidak memiliki warna hijau atau merah
+%     resultTableTime.color(cellfun('isempty', resultTableTime.color)) = {0};
+
+    % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
+    group.Result{t} = resultTableTime;
+end
+
+
 
