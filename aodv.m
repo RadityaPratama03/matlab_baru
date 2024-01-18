@@ -45,6 +45,9 @@ result = table('Size', [80, 5], ...
     'VariableTypes', {'double', 'double', 'string', 'double', 'double'}, ...
     'VariableNames', {'t', 'd', 'id', 'x', 'y'});
 
+% Inisialisasi matriks untuk menyimpan jarak antar titik
+jarakAntarTitik = zeros(maxIterations, maxIterations);
+
 % while t <= 80 
 % while t + 1 <= maxIterations && t <= 80
 while t + 1 <= maxIterations 
@@ -60,6 +63,10 @@ while t + 1 <= maxIterations
     result.id{t} = data.id{t};
     result.x(t) = data.x(t);
     result.y(t) = data.y(t);
+
+    % Menyimpan jarak antar titik ke dalam matriks
+    jarakAntarTitik(t-1, t) = d;
+    jarakAntarTitik(t, t-1) = d;
 
 %     % Tambahkan kondisi untuk keluar dari loop
 %     if t >= height(data)
@@ -93,6 +100,9 @@ for t = 1:100
 
     % Simpan resultTime ke dalam group
     group.Result{t} = resultTime;
+
+    % Hapus variabel yang tidak ingin ditampilkan di workspace
+    clear nonZeroDIdx rowsTotal rowsZero;
 end
 
 % Iterasi untuk t = 1 hingga 100
@@ -111,19 +121,144 @@ for t = 1:100
     if ~isempty(minD)
         resultTableTime.color{minD} = 'green';
     end
-
+    
     % Berikan warna merah untuk nilai d terbesar jika d > 0
     if ~isempty(maxD)
         resultTableTime.color{maxD} = 'red';
     end
+    
+    % Isi nilai biru hanya untuk baris dengan nilai d sama dengan 0
+    zeroDIdx = find(resultTableTime.d == 0);
+    resultTableTime.color(zeroDIdx) = {'blue'};
+    
+    % Isi nilai biru untuk baris dengan nilai d tidak sama dengan 0 dan tidak memiliki warna
+    nonZeroDIdx = find(resultTableTime.d ~= 0 & cellfun('isempty', resultTableTime.color));
+    resultTableTime.color(nonZeroDIdx) = {'blue'};
+    
+    % Isi nilai biru hanya untuk baris dengan nilai d = 0 dan berwarna 'blue'
+    zeroDIdx = find(resultTableTime.d == 0 & strcmp(resultTableTime.color, 'blue'));
+    resultTableTime.color(zeroDIdx) = {[0]};
 
-%     % Isi nilai 0 untuk seluruh baris yang tidak memiliki warna hijau atau merah
-%     resultTableTime.color(cellfun('isempty', resultTableTime.color)) = {0};
+    % Menyimpan indeks baris dengan nilai d terkecil sebagai Head Cluster (warna hijau)
+    headClusterIdx = find(strcmp(resultTableTime.color, 'green'));
+    if ~isempty(headClusterIdx)
+        resultTableTime.color{headClusterIdx} = 'Head Cluster';
+    end
 
     % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
     group.Result{t} = resultTableTime;
+
+    % Hapus variabel yang tidak ingin ditampilkan di workspace
+    clear nonZeroDIdx zeroDIdx;
+    clear headClusterIdx maxD minD;
 end
 
+% % Inisialisasi warna untuk plotting
+% warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
+% 
+% % Membuat satu figur
+% figure;
+% 
+% % Membuat plot untuk setiap nilai t dari 1 hingga 20
+% for t = 1:100
+%     % Mengambil tabel dari dalam cell array
+%     resultTableTime = group.Result{t};
+%     
+%     % Membuat plot (digunakan 'hold on' hanya pada iterasi pertama)
+%     if t == 1
+%         hold on;
+%     else
+%         % Membersihkan figur sebelum memplot iterasi berikutnya
+%         clf;
+%         hold on;
+%     end
+%     
+%     % Plot data dengan warna sesuai dengan kolom 'color'
+%     for i = 1:height(resultTableTime)
+%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15);
+%         elseif strcmp(resultTableTime.color{i}, 'blue')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 10);
+%         elseif strcmp(resultTableTime.color{i}, 'red')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 10);
+%         else
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 10);
+%         end
+%     end
+%     
+%     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
+%     for i = 1:height(resultTableTime)-1
+%         d = resultTableTime.d(i);
+%         plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
+% %         text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
+%     end
+%     
+%     % Menambahkan judul dan label pada plot
+%     title(['Plot Data untuk t = ' num2str(t)]);
+%     xlabel('X');
+%     ylabel('Y');
+%     grid on;
+%     
+%     % Menunggu sebentar agar perubahan posisi terlihat
+%     pause(1.0);
+%     
+%     hold off;
+% end
+
+
+
+% Inisialisasi warna untuk plotting
+warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
+
+% Membuat satu figur
+figure;
+
+% Loop melalui setiap tabel waktu dalam cell array
+for t = 1:100
+    % Mengambil tabel dari dalam cell array
+    resultTableTime = group.Result{t};
+    
+    % Membuat plot (digunakan 'hold on' hanya pada iterasi pertama)
+    if t == 1
+        hold on;
+    else
+        % Membersihkan figur sebelum memplot iterasi berikutnya
+        clf;
+        hold on;
+    end
+    
+    % Plot data dengan warna sesuai dengan kolom 'color'
+    for i = 1:height(resultTableTime)
+        if strcmp(resultTableTime.color{i}, 'Head Cluster')
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'green', 'MarkerSize', 10);
+        elseif strcmp(resultTableTime.color{i}, 'blue')
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 10);
+        elseif strcmp(resultTableTime.color{i}, 'red')
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 10);
+        else
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 10);
+        end
+    end
+    
+    % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
+    for i = 1:height(resultTableTime)-1
+        d = resultTableTime.d(i);
+        plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
+%         text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
+    end
+    
+    % Menambahkan judul dan label pada plot
+    title(['Plot Data untuk t = ' num2str(t)]);
+    xlabel('X');
+    ylabel('Y');
+    grid on;
+    
+    % Menunggu sebentar agar perubahan posisi terlihat
+    pause(0.1);
+    
+end
+
+hold off;
 
 
 
