@@ -126,9 +126,13 @@ for t = 1:100
     end
     
     % Berikan warna merah untuk nilai d terbesar jika d > 300
-    if ~isempty(maxD) && max(resultTableTime.d) > 300
-        resultTableTime.color{maxD} = 'red';
-    end
+if ~isempty(maxD) && max(resultTableTime.d) > 300
+    resultTableTime.color{maxD} = 'red';
+end
+%     % Berikan warna merah untuk nilai d terbesar jika d > 0
+%     if ~isempty(maxD)
+%         resultTableTime.color{maxD} = 'red';
+%     end
     
     % Isi nilai biru hanya untuk baris dengan nilai d sama dengan 0
     zeroDIdx = find(resultTableTime.d == 0);
@@ -152,7 +156,7 @@ for t = 1:100
     group.Result{t} = resultTableTime;
 
     % Melakukan pengecekan untuk sensor berbahaya
-    if t + 1 <= 120
+    if t + 1 <= 100
         % Mengambil tabel dari saat ini dan tabel dari iterasi berikutnya
         resultTableTimeCurrent = group.Result{t};
         resultTableTimeNext = group.Result{t + 1};
@@ -196,7 +200,7 @@ warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
 figure;
 
 % Membuat plot untuk setiap nilai t dari 1 hingga 20
-for t = 1:100
+for t = 1:25
     % Mengambil tabel dari dalam cell array
     resultTableTime = group.Result{t};
     
@@ -225,13 +229,7 @@ for t = 1:100
     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
     for i = 1:height(resultTableTime)-1
         d = resultTableTime.d(i);
-        
-        % Hanya gambar garis jika nilai d kurang dari atau sama dengan 300
-        if d <= 300
-            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
-        end
-        
-        % Tambahkan teks jarak jika diperlukan
+        plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
 %         text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
     end
     
