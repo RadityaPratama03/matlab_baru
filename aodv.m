@@ -45,7 +45,7 @@ result = table('Size', [80, 5], ...
     'VariableTypes', {'double', 'double', 'string', 'double', 'double'}, ...
     'VariableNames', {'t', 'd', 'id', 'x', 'y'});
 
-% Inisialisasi matriks untuk menyimpan jarak antar titik
+% % Inisialisasi matriks untuk menyimpan jarak antar titik
 % jarakAntarTitik = zeros(maxIterations, maxIterations);
 
 % while t <= 80 
@@ -85,7 +85,7 @@ M = {};
 % Iterasi untuk t = 1 hingga 100
 for t = 1:100
     % Mengambil data dengan nilai 't' sesuai iterasi
-    resultTime = result(result.t == t, :);
+    resultTable = result(result.t == t, :);
 
     % Perhitungan nilai d
     if t > 1
@@ -95,14 +95,14 @@ for t = 1:100
     end
     
     % Jika data tidak mencapai 80 baris, tambahkan baris dengan nilai 0
-    if size(resultTime, 1) < 80
-        rowsTotal = 80 - size(resultTime, 1);
-        rowsZero = array2table(zeros(rowsTotal, width(resultTime)), 'VariableNames', resultTime.Properties.VariableNames);
-        resultTime = [resultTime; rowsZero];
+    if size(resultTable, 1) < 80
+        rowsTotal = 80 - size(resultTable, 1);
+        rowsZero = array2table(zeros(rowsTotal, width(resultTable)), 'VariableNames', resultTable.Properties.VariableNames);
+        resultTable = [resultTable; rowsZero];
     end
 
     % Simpan resultTime ke dalam group
-    group.Result{t} = resultTime;
+    group.Result{t} = resultTable;
 
     % Hapus variabel yang tidak ingin ditampilkan di workspace
     clear nonZeroDIdx rowsTotal rowsZero;
@@ -117,17 +117,17 @@ for t = 1:100
     resultTableTime.color = cell(height(resultTableTime), 1);
 
     % Temukan indeks baris dengan nilai d terkecil dan terbesar
-    minD = find(resultTableTime.d > 0, 1, 'first');
-    maxD = find(resultTableTime.d > 0, 1, 'last');
+    minD = find(resultTableTime.d == min(resultTableTime.d(resultTableTime.d > 0)), 1, 'first');
+    maxD = find(resultTableTime.d >= 300);
 
     % Berikan warna hijau untuk nilai d terkecil jika d > 0
     if ~isempty(minD)
         resultTableTime.color{minD} = 'green';
     end
     
-    % Berikan warna merah untuk nilai d terbesar jika d > 300
-    if ~isempty(maxD) && max(resultTableTime.d) > 300
-        resultTableTime.color{maxD} = 'red';
+    % Berikan warna merah untuk nilai d lebih besar atau sama dengan 300
+    if ~isempty(maxD)
+        resultTableTime.color(maxD) = {'red'};
     end
     
     % Isi nilai biru hanya untuk baris dengan nilai d sama dengan 0
@@ -140,7 +140,7 @@ for t = 1:100
     
     % Isi nilai biru hanya untuk baris dengan nilai d = 0 dan berwarna 'blue'
     zeroDIdx = find(resultTableTime.d == 0 & strcmp(resultTableTime.color, 'blue'));
-    resultTableTime.color(zeroDIdx) = {[0]};
+    resultTableTime.color(zeroDIdx) = {0};
 
     % Menyimpan indeks baris dengan nilai d terkecil sebagai Head Cluster (warna hijau)
     headClusterIdx = find(strcmp(resultTableTime.color, 'green'));
@@ -151,43 +151,56 @@ for t = 1:100
     % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
     group.Result{t} = resultTableTime;
 
-    % Melakukan pengecekan untuk sensor berbahaya
-    if t + 1 <= 120
-        % Mengambil tabel dari saat ini dan tabel dari iterasi berikutnya
-        resultTableTimeCurrent = group.Result{t};
-        resultTableTimeNext = group.Result{t + 1};
-
-        % Mendapatkan N(A)k dan N(B)k dari tabel saat ini dan berikutnya
-        N_Ak = unique(resultTableTimeCurrent.id);
-        N_Bk = unique(resultTableTimeNext.id);
-
-        % Pengecekan untuk setiap node A dan node B yang berdekatan
-        for i = 1:numel(N_Ak)
-            A = N_Ak{i};
-            for j = 1:numel(N_Bk)
-                B = N_Bk{j};
-                
-                % Jika N(A)1 ∩ N(B)1 atau N(A)1 ∩ N(B)2, maka Sah, selain itu Malicious
-                if ismember(A, resultTableTimeCurrent.id) && ismember(B, resultTableTimeNext.id)
-                    if numel(intersect(N_Ak, N_Bk)) > 0
-                        disp('Sah');
-                    else
-                        disp('Malicious');
-                        % Tambahkan A dan B ke M
-                        M = unique([M, A, B]);
-                        % Broadcast M
-                        disp(['Broadcast M: ', strjoin(M, ', ')]);
-                    end
-                end
-            end
-        end
-    end
+%     % Melakukan pengecekan untuk sensor berbahaya
+%     if t + 1 <= 100
+%         % Mengambil tabel dari saat ini dan tabel dari iterasi berikutnya
+%         resultTableTimeCurrent = group.Result{t};
+%         resultTableTimeNext = group.Result{t + 1};
+% 
+%         % Mendapatkan N(A)k dan N(B)k dari tabel saat ini dan berikutnya
+%         N_Ak = unique(resultTableTimeCurrent.id);
+%         N_Bk = unique(resultTableTimeNext.id);
+% 
+%         % Pengecekan untuk setiap node A dan node B yang berdekatan
+%         for i = 1:numel(N_Ak)
+%             A = N_Ak{i};
+%             for j = 1:numel(N_Bk)
+%                 B = N_Bk{j};
+%                 
+%                 % Jika N(A)1 ∩ N(B)1 atau N(A)1 ∩ N(B)2, maka Sah, selain itu Malicious
+%                 if ismember(A, resultTableTimeCurrent.id) && ismember(B, resultTableTimeNext.id)
+%                     if numel(intersect(N_Ak, N_Bk)) > 0
+% %                         disp('Legimate');
+%                     else
+%                         disp('Malicious');
+%                         % Tambahkan A dan B ke M
+%                         M = unique([M, A, B]);
+%                         % Broadcast M
+%                         disp(['Broadcast M: ', strjoin(M, ', ')]);
+%                     end
+%                 end
+%             end
+%         end
+% %         % Iterasi melalui N_Ak dan N_Bk untuk mendapatkan id-node
+% %         for i = 1:numel(N_Ak)
+% %             node_id = N_Ak{i};
+% %             idx = strcmp(resultTableTimeCurrent.id, node_id);
+% %             disp(['Id-node N_Ak: ', resultTableTimeCurrent.id{idx}]);
+% %         end
+% %         
+% %         for i = 1:numel(N_Bk)
+% %             node_id = N_Bk{i};
+% %             idx = strcmp(resultTableTimeNext.id, node_id);
+% %             disp(['Id-node N_Bk: ', resultTableTimeNext.id{idx}]);
+% %         end
+%     end
 
     % Hapus variabel yang tidak ingin ditampilkan di workspace
     clear nonZeroDIdx zeroDIdx;
     clear headClusterIdx maxD minD;
+    clear A B;
+%     clear N_Ak N_Bk;
 end
-
 
 % Inisialisasi warna untuk plotting
 warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
@@ -196,7 +209,7 @@ warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
 figure;
 
 % Membuat plot untuk setiap nilai t dari 1 hingga 20
-for t = 1:100
+for t = 1:20
     % Mengambil tabel dari dalam cell array
     resultTableTime = group.Result{t};
     
@@ -221,6 +234,19 @@ for t = 1:100
             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 10);
         end
     end
+
+%     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
+%     for i = 1:height(resultTableTime)-1
+%         d = resultTableTime.d(i);
+%         
+%         % Hanya gambar garis jika nilai d kurang dari atau sama dengan 300
+%         if d <= 300 && ~strcmp(resultTableTime.color{i}, 'red') && ~strcmp(resultTableTime.color{i+1}, 'red')
+%             fprintf('Node %d to Node %d, d=%.2f\n', i, i+1, d);
+%             % Tambahkan teks jarak jika diperlukan
+% %             text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
+%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
+%         end
+%     end
     
     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
     for i = 1:height(resultTableTime)-1
@@ -241,148 +267,117 @@ for t = 1:100
     ylabel('Y');
     grid on;
     
+    % Scatter plot
+%     scatter(resultTableTime.x, resultTableTime.y, 'MarkerEdgeColor', 'blue', 'Marker', 'o', 'MarkerFaceColor', 'none', 'LineWidth', 1.5);
+    
+    % Text plot
+%     text(resultTableTime.x, resultTableTime.y, cellfun(@num2str, resultTableTime.color, 'UniformOutput', false), 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right');
+
     % Menunggu sebentar agar perubahan posisi terlihat
-    pause(1.0);
+    pause(3.0);
     
     hold off;
 end
 
 
+% Inisialisasi variabel
+numNodes = 500;
+% numNodes = height(data);
+
+% Gunakan hasil data dari tabel result untuk inisialisasi jarak antar node
+validDValues = zeros(numNodes, numNodes);
+
+for i = 1:numNodes
+    for j = 1:numNodes
+        % Perhitungan jarak antar node i dan j
+        validDValues(i, j) = sqrt((result.x(i) - result.x(j))^2 + (result.y(i) - result.y(j))^2);
+    end
+end
+
+% Inisialisasi AODV
+status = '!';
+dist = inf(1, numNodes);
+next = zeros(1, numNodes);
+
+% Inisialisasi status, dist, dan next
+for i = 1:numNodes
+    if i == 1
+        status(i) = '!';
+        dist(i) = 0;
+        next(i) = 0;
+    else
+        status(i) = '?';
+        % Gunakan hasil perhitungan jarak dari tabel result
+        dist(i) = result.d(i);
+        next(i) = 1;
+    end
+end
+
+% Inisialisasi variabel lainnya
+flag = 0;
+temp = 0;
+
+% Inisialisasi tujuan node akhir
+goalNode = 1; % Sesuaikan dengan node tujuan
+
+while flag ~= 1 && temp < numNodes
+    temp = temp + 1; % Tambahkan iterasi
+
+    % Pilih node dengan dist terkecil dan status '?'
+    [minDist, vert] = min(dist(status == '?'));
+
+    % Perbarui status
+    status(vert) = '!';
+
+    % Perbarui dist dan next untuk node tetangga
+    for i = 1:numNodes
+        if status(i) == '?' && dist(i) > dist(vert) + validDValues(vert, i)
+            dist(i) = dist(vert) + validDValues(vert, i);
+            next(i) = vert;
+
+            % Log RREQ
+            disp(['Node ' num2str(vert) ' sends RREQ message to node ' num2str(i)]);
+
+            % Log RREP
+            disp(['Node ' num2str(i) ' sends RREP message to node ' num2str(vert)]);
+
+
+            % Tambahkan kondisi untuk keluar dari loop jika goalNode tercapai
+            if i == goalNode
+                flag = 1;
+                break;
+            end
+        end
+    end
+
+    if all(status == '!')
+        flag = 1;
+        break;
+    end
+
+%     pause(2.0);  % Add a pause to slow down the animation
+end
+
+% Inisialisasi variabel untuk menyimpan rute
+i = goalNode; % Ganti dengan goalNode
+count = 1;
+route(count) = goalNode;
+
+% Bangun rute dari node terakhir ke node pertama
+while next(i) ~= 0 % Ganti dengan node awal
+    count = count + 1;
+    route(count) = next(i);
+    i = next(i);
+end
+
+% Tampilkan hasil rute
+disp('AODV Route:');
+disp(route);
 
 
 
 
 
-
-
-% % Inisialisasi matriks A untuk digunakan dalam AODV
-% A = zeros(80);  % Ganti 80 dengan ukuran yang sesuai
-% 
-% % Menjalankan AODV
-% x = 1:20;
-% s1 = x(1);
-% d1 = x(20);
-% 
-% status(1) = '!';
-% dist(2) = 0;
-% next(1) = 0;
-% 
-% for i = 2:20
-%     status(i) = '?';
-%     dist(i) = A(i, 1);
-%     next(i) = 1;
-% end
-% 
-% flag = 0;
-% for i = 2:20
-%     if A(1, i) == 1
-%         disp([' node 1 sends RREQ to node ' num2str(i)])
-%         if i == 20 && A(1, i) == 1
-%             flag = 1;
-%         end
-%     end
-% end
-% disp(['Flag= ' num2str(flag)]);
-% 
-% while (1)
-% 
-%     if flag == 1
-%         break;
-%     end
-% 
-%     temp = 0;
-%     for i = 1:20
-%         if status(i) == '?'
-%             min = dist(i);
-%             vert = i;
-%             break;
-%         end
-%     end
-% 
-%     for i = 1:20
-%         if min > dist(i) && status(i) == '?'
-%             min = dist(i);
-%             vert = i;
-%         end
-%     end
-%     status(vert) = '!';
-% 
-%     for i = 1:20
-%         if status() == '!'
-%             temp = temp + 1;
-%         end
-%     end
-% 
-%     if temp == 20
-%         break;
-%     end
-% end
-% 
-% i = 20;
-% count = 1;
-% route(count) = 20;
-% 
-% while next(i) ~= 1
-%     disp([' Node ' num2str(i) 'sends RREP message to node ' num2str(next(i))])
-%     i = next(i);
-%     count = count + 1;
-%     route(count) = i;
-%     route(count) = i;
-% end
-% 
-% disp([' Node ' num2str(i) 'sends RREP to node 1'])
-% disp(' Node 1 ')
-% for i = count: -1:1
-%     disp([' Sends message to node ' num2str(route(i))])
-% end
-% 
-% % Menampilkan hasil AODV ke dalam program utama
-% figure;
-% 
-% for t = 1:25
-%     resultTableTime = group.Result{t};
-%     
-%     if t == 1
-%         hold on;
-%     else
-%         clf;
-%         hold on;
-%     end
-%     
-%     % Plot data dengan warna sesuai dengan kolom 'color'
-%     for i = 1:height(resultTableTime)
-%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15);
-%         elseif strcmp(resultTableTime.color{i}, 'blue')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 10);
-%         elseif strcmp(resultTableTime.color{i}, 'red')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 10);
-%         else
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 10);
-%         end
-%     end
-%     
-%     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
-%     for i = 1:height(resultTableTime)-1
-%         d = resultTableTime.d(i);
-%         plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
-%     end
-%     
-%     % Menambahkan marker untuk menunjukkan hasil AODV (misalnya, marker berbeda untuk RREQ dan RREP)
-%     markerX = resultTableTime.x;
-%     markerY = resultTableTime.y;
-%     plot(markerX, markerY, 's', 'Color', 'magenta', 'MarkerSize', 12, 'LineWidth', 2);
-% 
-% 
-%     title(['Plot Data untuk t = ' num2str(t)]);
-%     xlabel('X');
-%     ylabel('Y');
-%     grid on;
-%     
-%     pause(1.0);
-%     
-%     hold off;
-% end
 
 % % Inisialisasi warna untuk plotting
 % warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
@@ -446,101 +441,4 @@ end
 %     % Kalkulasi nilai d
 %     d = sqrt((data.x(t) - data.x(t-1)).^2 + (data.y(t) - data.y(t-1)).^2);
 
-% %Code : AODV Routing.
-% x=1:20;
-% s1=x(1);
-% d1=x(20);
-% clc;
-% A=rand(20);
-% % Making matrix all diagonals=0 and A(i,j)=A(j,i),i.e. A(1,4)=a(4,1),
-% % A(6,7)=A(7,6)
-% for i=1:20
-%         for j=1:20
-%                 if i==j
-%                     A(i,j)=0;
-%                 else
-%                     A(j,i)=A(i,j);
-%                 end
-%         end
-% end
-% disp(A);
-% t=1:20;
-% disp(t);
-%  
-%  disp(A);
-%  status(1)='!';
-% % dist(1)=0;
-% dist(2)=0;
-%  next(1)=0;
-%  
-%  for i=2:20
-%     
-%      status(i)='?';
-%      dist(i)=A(i,1);
-%      next(i)=1;
-%    disp(['i== ' num2str(i) ' A(i,1)=' num2str(A(i,1)) ' status:=' status(i) ' dist(i)=' num2str(dist(i))]);
-%  end
-%  
-%  flag=0;
-%  for i=2:20
-%         if A(1,i)==1
-%             disp([' node 1 sends RREQ to node ' num2str(i)])
-%                 if i==20 && A(1,i)==1
-%                        flag=1;
-%                 end
-%         end
-%  end
-%  disp(['Flag= ' num2str(flag)]);
-%  while(1)
-%      
-%     if flag==1
-%             break;
-%     end
-%     
-%     temp=0;
-%     for i=1:20
-%         if status(i)=='?'
-%             min=dist(i);
-%             vert=i;
-%             break;
-%         end
-%     end
-%     
-%     for i=1:20
-%         if min>dist(i) && status(i)=='?'
-%             min=dist(i);
-%             vert=i;
-%         end
-%     end
-%     status(vert)='!';
-%     
-%     for i=1:20
-%         if status()=='!'
-%             temp=temp+1;
-%         end
-%     end
-%     
-%     if temp==20
-%         break;
-%     end
-%  end
-%   
-%  i=20;
-%  count=1;
-%  route(count)=20;
-%  
-%  while next(i) ~=1
-%      disp([' Node ' num2str(i) 'sends RREP message to node ' num2str(next(i))])
-%      i=next(i);
-%      %disp(i);
-%      count=count+1;
-%      route(count)=i;
-%      route(count)=i;
-%  end
-%  
-%  disp([ ' Node ' num2str(i) 'sends RREP to node 1'])
-%  disp(' Node 1 ')
-%  for i=count: -1:1
-%      disp([ ' Sends message to node ' num2str(route(i))])
-%  end
 
