@@ -221,19 +221,19 @@ for t = 1:20
         clf;
         hold on;
     end
-    
+
     % Plot data dengan warna sesuai dengan kolom 'color'
-    for i = 1:height(resultTableTime)
+    for i = 1:size(resultTableTime, 1)
         if strcmp(resultTableTime.color{i}, 'Head Cluster')
-            plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15);
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
         elseif strcmp(resultTableTime.color{i}, 'blue')
-            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 10);
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
         elseif strcmp(resultTableTime.color{i}, 'red')
-            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 10);
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 8, 'MarkerFaceColor', 'red', 'LineWidth', 1);
         else
-            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 10);
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
         end
-    end
+    end  
 
 %     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
 %     for i = 1:height(resultTableTime)-1
@@ -249,7 +249,7 @@ for t = 1:20
 %     end
     
     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
-    for i = 1:height(resultTableTime)-1
+    for i = 1:size(resultTableTime, 1)-1
         d = resultTableTime.d(i);
         
         % Hanya gambar garis jika nilai d kurang dari atau sama dengan 300
@@ -266,7 +266,8 @@ for t = 1:20
     xlabel('X');
     ylabel('Y');
     grid on;
-    
+    axis([-50 350 -40 120]);
+
     % Scatter plot
 %     scatter(resultTableTime.x, resultTableTime.y, 'MarkerEdgeColor', 'blue', 'Marker', 'o', 'MarkerFaceColor', 'none', 'LineWidth', 1.5);
     
@@ -274,7 +275,7 @@ for t = 1:20
 %     text(resultTableTime.x, resultTableTime.y, cellfun(@num2str, resultTableTime.color, 'UniformOutput', false), 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right');
 
     % Menunggu sebentar agar perubahan posisi terlihat
-    pause(3.0);
+    pause(5.0);
     
     hold off;
 end
