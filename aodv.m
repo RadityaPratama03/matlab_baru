@@ -125,22 +125,21 @@ for t = 1:100
         resultTableTime.color{minD} = 'green';
     end
     
-    % Berikan warna merah untuk nilai d lebih besar atau sama dengan 300
-    if ~isempty(maxD)
-        resultTableTime.color(maxD) = {'red'};
-    end
+%     % Berikan warna merah untuk nilai d lebih besar atau sama dengan 300
+%     if ~isempty(maxD)
+%         resultTableTime.color(maxD) = {'red'};
+%     end
     
     % Isi nilai biru hanya untuk baris dengan nilai d sama dengan 0
-    zeroDIdx = find(resultTableTime.d == 0);
-    resultTableTime.color(zeroDIdx) = {'blue'};
+    zeroDIdx = resultTableTime.d == 0;
+    
+    % Hapus node biru dengan nilai d = 0 dari hasil plot
+    resultTableTime(zeroDIdx, :) = [];
     
     % Isi nilai biru untuk baris dengan nilai d tidak sama dengan 0 dan tidak memiliki warna
     nonZeroDIdx = find(resultTableTime.d > 0 & cellfun('isempty', resultTableTime.color));
     resultTableTime.color(nonZeroDIdx) = {'blue'};
-    
-    % Isi nilai biru hanya untuk baris dengan nilai d = 0 dan berwarna 'blue'
-    zeroDIdx = find(resultTableTime.d == 0 & strcmp(resultTableTime.color, 'blue'));
-    resultTableTime.color(zeroDIdx) = {0};
+
 
     % Menyimpan indeks baris dengan nilai d terkecil sebagai Head Cluster (warna hijau)
     headClusterIdx = find(strcmp(resultTableTime.color, 'green'));
@@ -151,49 +150,49 @@ for t = 1:100
     % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
     group.Result{t} = resultTableTime;
 
-%     % Melakukan pengecekan untuk sensor berbahaya
-%     if t + 1 <= 100
-%         % Mengambil tabel dari saat ini dan tabel dari iterasi berikutnya
-%         resultTableTimeCurrent = group.Result{t};
-%         resultTableTimeNext = group.Result{t + 1};
-% 
-%         % Mendapatkan N(A)k dan N(B)k dari tabel saat ini dan berikutnya
-%         N_Ak = unique(resultTableTimeCurrent.id);
-%         N_Bk = unique(resultTableTimeNext.id);
-% 
-%         % Pengecekan untuk setiap node A dan node B yang berdekatan
+    % Melakukan pengecekan untuk sensor berbahaya
+    if t + 1 <= 100
+        % Mengambil tabel dari saat ini dan tabel dari iterasi berikutnya
+        resultTableTimeCurrent = group.Result{t};
+        resultTableTimeNext = group.Result{t + 1};
+
+        % Mendapatkan N(A)k dan N(B)k dari tabel saat ini dan berikutnya
+        N_Ak = unique(resultTableTimeCurrent.id);
+        N_Bk = unique(resultTableTimeNext.id);
+
+        % Pengecekan untuk setiap node A dan node B yang berdekatan
+        for i = 1:numel(N_Ak)
+            A = N_Ak{i};
+            for j = 1:numel(N_Bk)
+                B = N_Bk{j};
+                
+                % Jika N(A)1 ∩ N(B)1 atau N(A)1 ∩ N(B)2, maka Sah, selain itu Malicious
+                if ismember(A, resultTableTimeCurrent.id) && ismember(B, resultTableTimeNext.id)
+                    if numel(intersect(N_Ak, N_Bk)) > 0
+%                         disp('Legimate');
+                    else
+                        disp('Malicious');
+                        % Tambahkan A dan B ke M
+                        M = unique([M, A, B]);
+                        % Broadcast M
+                        disp(['Broadcast M: ', strjoin(M, ', ')]);
+                    end
+                end
+            end
+        end
+%         % Iterasi melalui N_Ak dan N_Bk untuk mendapatkan id-node
 %         for i = 1:numel(N_Ak)
-%             A = N_Ak{i};
-%             for j = 1:numel(N_Bk)
-%                 B = N_Bk{j};
-%                 
-%                 % Jika N(A)1 ∩ N(B)1 atau N(A)1 ∩ N(B)2, maka Sah, selain itu Malicious
-%                 if ismember(A, resultTableTimeCurrent.id) && ismember(B, resultTableTimeNext.id)
-%                     if numel(intersect(N_Ak, N_Bk)) > 0
-% %                         disp('Legimate');
-%                     else
-%                         disp('Malicious');
-%                         % Tambahkan A dan B ke M
-%                         M = unique([M, A, B]);
-%                         % Broadcast M
-%                         disp(['Broadcast M: ', strjoin(M, ', ')]);
-%                     end
-%                 end
-%             end
+%             node_id = N_Ak{i};
+%             idx = strcmp(resultTableTimeCurrent.id, node_id);
+%             disp(['Id-node N_Ak: ', resultTableTimeCurrent.id{idx}]);
 %         end
-% %         % Iterasi melalui N_Ak dan N_Bk untuk mendapatkan id-node
-% %         for i = 1:numel(N_Ak)
-% %             node_id = N_Ak{i};
-% %             idx = strcmp(resultTableTimeCurrent.id, node_id);
-% %             disp(['Id-node N_Ak: ', resultTableTimeCurrent.id{idx}]);
-% %         end
-% %         
-% %         for i = 1:numel(N_Bk)
-% %             node_id = N_Bk{i};
-% %             idx = strcmp(resultTableTimeNext.id, node_id);
-% %             disp(['Id-node N_Bk: ', resultTableTimeNext.id{idx}]);
-% %         end
-%     end
+%         
+%         for i = 1:numel(N_Bk)
+%             node_id = N_Bk{i};
+%             idx = strcmp(resultTableTimeNext.id, node_id);
+%             disp(['Id-node N_Bk: ', resultTableTimeNext.id{idx}]);
+%         end
+    end
 
     % Hapus variabel yang tidak ingin ditampilkan di workspace
     clear nonZeroDIdx zeroDIdx;
@@ -228,37 +227,23 @@ for t = 1:20
             plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
         elseif strcmp(resultTableTime.color{i}, 'blue')
             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
-        elseif strcmp(resultTableTime.color{i}, 'red')
-            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 8, 'MarkerFaceColor', 'red', 'LineWidth', 1);
+%         elseif strcmp(resultTableTime.color{i}, 'red')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 8, 'MarkerFaceColor', 'red', 'LineWidth', 1);
         else
             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
         end
     end  
 
-%     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
-%     for i = 1:height(resultTableTime)-1
-%         d = resultTableTime.d(i);
-%         
-%         % Hanya gambar garis jika nilai d kurang dari atau sama dengan 300
-%         if d <= 300 && ~strcmp(resultTableTime.color{i}, 'red') && ~strcmp(resultTableTime.color{i+1}, 'red')
-%             fprintf('Node %d to Node %d, d=%.2f\n', i, i+1, d);
-%             % Tambahkan teks jarak jika diperlukan
-% %             text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
-%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
-%         end
-%     end
-    
     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
     for i = 1:size(resultTableTime, 1)-1
         d = resultTableTime.d(i);
         
         % Hanya gambar garis jika nilai d kurang dari atau sama dengan 300
-        if d <= 300
-            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
+        if d <= 300 
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+        else
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
         end
-        
-        % Tambahkan teks jarak jika diperlukan
-%         text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
     end
     
     % Menambahkan judul dan label pada plot
@@ -268,24 +253,14 @@ for t = 1:20
     grid on;
     axis([-50 350 -40 120]);
 
-    % Scatter plot
-%     scatter(resultTableTime.x, resultTableTime.y, 'MarkerEdgeColor', 'blue', 'Marker', 'o', 'MarkerFaceColor', 'none', 'LineWidth', 1.5);
-    
-    % Text plot
-%     text(resultTableTime.x, resultTableTime.y, cellfun(@num2str, resultTableTime.color, 'UniformOutput', false), 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'right');
-
     % Menunggu sebentar agar perubahan posisi terlihat
     pause(5.0);
     
     hold off;
 end
 
-
 % Inisialisasi variabel
 numNodes = 500;
-% numNodes = height(data);
-
-% Gunakan hasil data dari tabel result untuk inisialisasi jarak antar node
 validDValues = zeros(numNodes, numNodes);
 
 for i = 1:numNodes
@@ -318,8 +293,11 @@ end
 flag = 0;
 temp = 0;
 
-% Inisialisasi tujuan node akhir
+% Set goalNode
 goalNode = 1; % Sesuaikan dengan node tujuan
+
+% Initialize variables to store ping information
+pingResults = cell(numNodes, numNodes);
 
 while flag ~= 1 && temp < numNodes
     temp = temp + 1; % Tambahkan iterasi
@@ -339,9 +317,20 @@ while flag ~= 1 && temp < numNodes
             % Log RREQ
             disp(['Node ' num2str(vert) ' sends RREQ message to node ' num2str(i)]);
 
+            % Simulate reply or timeout based on distance
+            if validDValues(vert, i) < 300
+                pingResults{vert, i} = 'Ping: 100';
+            else
+                pingResults{vert, i} = 'Timeout';
+                % Tambahkan kondisi untuk keluar dari loop jika goalNode tercapai
+                if i == goalNode
+                    flag = 1;
+                    break;
+                end
+            end
+
             % Log RREP
             disp(['Node ' num2str(i) ' sends RREP message to node ' num2str(vert)]);
-
 
             % Tambahkan kondisi untuk keluar dari loop jika goalNode tercapai
             if i == goalNode
@@ -356,7 +345,29 @@ while flag ~= 1 && temp < numNodes
         break;
     end
 
-%     pause(2.0);  % Add a pause to slow down the animation
+    % pause(2.0);  % Add a pause to slow down the animation
+end
+
+% Display ping results
+disp('Ping Results:');
+for i = 1:numNodes
+    for j = 1:numNodes
+        if ~isempty(pingResults{i, j})
+            disp(['Node ' num2str(i) ' to Node ' num2str(j) ': ' pingResults{i, j}]);
+        end
+    end
+end
+
+% Check for nodes that initiated RREQ but did not receive RREP (Timeout)
+disp('Timeout Results:');
+for i = 1:numNodes
+    initiatedRREQ = find(~cellfun('isempty', pingResults(i, :)));
+    receivedRREP = find(cellfun(@(x) strcmp(x, 'Ping: 100'), pingResults(i, :)));
+    
+    if isempty(receivedRREP)
+        % Node initiated RREQ but did not receive RREP (Timeout)
+        disp(['Node ' num2str(i) ' tidak RREP Ping : Timeout']);
+    end
 end
 
 % Inisialisasi variabel untuk menyimpan rute
@@ -376,60 +387,6 @@ disp('AODV Route:');
 disp(route);
 
 
-
-
-
-
-% % Inisialisasi warna untuk plotting
-% warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
-% 
-% % Membuat satu figur
-% figure;
-% 
-% % Loop melalui setiap tabel waktu dalam cell array
-% for t = 1:100
-%     % Mengambil tabel dari dalam cell array
-%     resultTableTime = group.Result{t};
-%     
-%     % Membuat plot (digunakan 'hold on' hanya pada iterasi pertama)
-%     if t == 1
-%         hold on;
-%     else
-%         % Membersihkan figur sebelum memplot iterasi berikutnya
-%         clf;
-%         hold on;
-%     end
-%     
-%     % Plot data dengan warna sesuai dengan kolom 'color'
-%     for i = 1:height(resultTableTime)
-%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'green', 'MarkerSize', 10);
-%         elseif strcmp(resultTableTime.color{i}, 'blue')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 10);
-%         elseif strcmp(resultTableTime.color{i}, 'red')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'red', 'MarkerSize', 10);
-%         else
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 10);
-%         end
-%     end
-%     
-%     % Menambahkan garis yang menghubungkan node berdasarkan nilai d pada t saat ini
-%     for i = 1:height(resultTableTime)-1
-%         d = resultTableTime.d(i);
-%         plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'k--', 'LineWidth', 1);
-% %         text((resultTableTime.x(i) + resultTableTime.x(i+1)) / 2, (resultTableTime.y(i) + resultTableTime.y(i+1)) / 2, sprintf('d=%.2f', d), 'Color', 'k', 'FontSize', 8);
-%     end
-%     
-%     % Menambahkan judul dan label pada plot
-%     title(['Plot Data untuk t = ' num2str(t)]);
-%     xlabel('X');
-%     ylabel('Y');
-%     grid on;
-%     
-%     % Menunggu sebentar agar perubahan posisi terlihat
-%     pause(0.1);
-%     
-% end
 
 
 
