@@ -251,97 +251,92 @@ for t = 1:100
 %     clear N_Ak N_Bk;
 end
 
-% % Inisialisasi warna untuk plotting
-% warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
-% 
-% % Membuat plot untuk setiap nilai t dari 1 hingga 20
-% for t_idx = 1:20
-%     % Mengambil tabel dari dalam cell array
-%     resultTableTime = group.Result{t_idx};
-% 
-%     % Membuat plot (digunakan 'hold on' hanya pada iterasi pertama)
-%     if t == 1
-%         hold on;
-%     else
-%         % Membersihkan figur sebelum memplot iterasi berikutnya
-%         clf;
-%         hold on;
-%     end
-% 
-%     % Plot data pada subplot pertama
-%     subplot(2, 1, 1);
-%     hold on;
-% 
-%     for i = 1:size(resultTableTime, 1)
-%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
-%         elseif strcmp(resultTableTime.color{i}, 'blue')
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
-%         else
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
-%         end
-%     end  
-% 
-%     title(['Plot Data untuk t = ' num2str(t_idx)]);
-%     
-%     % Plot garis antar node berdasarkan nilai d pada t saat ini
-%     for i = 1:size(resultTableTime, 1)-1
-%         d = resultTableTime.d(i);
-%         if d <= 300 
-%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
-%         else
-%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
-%         end
-%     end
-% 
-%     % Plot data pada subplot kedua
-%     subplot(2, 1, 2);
-%     hold on;
-% 
-%     % Tentukan indeks head cluster di grafik pertama
-%     originalHeadClusterIndex = find(strcmp(group.Result{1}.color, 'Head Cluster'));
-%     
-%     for i = 1:size(resultTableTime, 1)
-%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
-%             % Tentukan indeks head cluster di grafik kedua
-%             newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resultTableTime, 1)) + 1;
-%             
-%             % Plot head cluster sebagai 'X' hijau
-%             plot(resultTableTime.x(newHeadClusterIndex), resultTableTime.y(newHeadClusterIndex), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
-%         elseif strcmp(resultTableTime.color{i}, 'blue')
-%             % Plot node biru seperti pada grafik pertama
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
-%         elseif ismember(i, headClusterIndex)
-%             % Cek apakah node yang ditinggalkan oleh head cluster adalah head cluster baru
-%             newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resultTableTime, 1)) + 1;
-%             if newHeadClusterIndex ~= i
-%                 % Node yang ditinggalkan oleh head cluster menjadi biru
-%                 plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
-%             end
-%         else
-%             % Plot node lainnya
-%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
-%         end
-%     end
-% 
-% 
-%     title(['Plot Data untuk t = ' num2str(t_idx)]);
-%     
-%     % Plot garis antar node berdasarkan nilai d pada t saat ini
-%     for i = 1:size(resultTableTime, 1)-1
-%         d = resultTableTime.d(i);
-%         if d <= 300 
-%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
-%         else
-%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
-%         end
-%     end
-%     
-%     % Menunggu sebentar agar perubahan posisi terlihat
-%     pause(3.0);
-% 
-% end
-% hold off; % Mengakhiri 'hold on' setelah loop selesai
+% Inisialisasi warna untuk plotting
+warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
+
+% Membuat plot untuk setiap nilai t dari 1 hingga 20
+for t_idx = 1:20
+    % Mengambil tabel dari dalam cell array
+    resultTableTime = group.Result{t_idx};
+
+    % Membuat plot (digunakan 'hold on' hanya pada iterasi pertama)
+    if t_idx == 1
+        hold on;
+    else
+        % Membersihkan figur sebelum memplot iterasi berikutnya
+        clf;
+        hold on;
+    end
+
+    % Plot data pada subplot pertama
+    subplot(2, 1, 1);
+    hold on;
+
+    for i = 1:size(resultTableTime, 1)
+        if strcmp(resultTableTime.color{i}, 'Head Cluster')
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
+        elseif strcmp(resultTableTime.color{i}, 'blue')
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
+        else
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
+        end
+    end  
+
+    title(['Plot Data untuk t = ' num2str(t_idx)]);
+    
+    % Plot garis antar node berdasarkan nilai d pada t saat ini
+    for i = 1:size(resultTableTime, 1)-1
+        d = resultTableTime.d(i);
+        if d <= 300 
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+        else
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
+        end
+    end
+
+    % Plot data pada subplot kedua
+    subplot(2, 1, 2);
+    hold on;
+
+    % Tentukan indeks head cluster di grafik pertama
+    originalHeadClusterIndex = find(strcmp(group.Result{1}.color, 'Head Cluster'));
+    
+    % Tentukan indeks head cluster di grafik kedua
+    newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resultTableTime, 1)) + 1;
+    
+    % Tentukan node yang ditinggalkan oleh head cluster
+    nodesDitinggalkan = originalHeadClusterIndex(originalHeadClusterIndex ~= newHeadClusterIndex);
+    
+    for i = 1:size(resultTableTime, 1)
+        if i == newHeadClusterIndex
+            % Plot head cluster baru sebagai 'X' hijau
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
+        elseif i == nodesDitinggalkan
+            % Node yang ditinggalkan oleh head cluster menjadi biru
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
+        else
+            % Plot semua node lainnya sebagai biru
+            plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
+        end
+    end
+
+    title(['Plot Data untuk t = ' num2str(t_idx)]);
+    
+    % Plot garis antar node berdasarkan nilai d pada t saat ini
+    for i = 1:size(resultTableTime, 1)-1
+        d = resultTableTime.d(i);
+        if d <= 300 
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+        else
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
+        end
+    end
+    
+    pause(3.0);
+
+end
+hold off; 
+
 
 % % Inisialisasi variabel
 % numNodes = 500;
