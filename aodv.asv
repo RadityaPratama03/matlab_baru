@@ -501,12 +501,12 @@ disp('Daftar sensor berbahaya:');
 disp(M);
 
 % Fungsi untuk mencari tetangga suatu node pada suatu waktu
-function neighbors = findNeighbor(nodeId, resultTable)
+function neighbors = findNeighbor(nodeId, resultTableTime)
     % Filter hasil untuk node yang sesuai
-    nodeResult = resultTable(resultTable.sequence == nodeId, :);
+    nodeResult = resultTableTime(resultTableTime.sequence == nodeId, :);
 %     nodeResult = resultTable(strcmp(resultTable.sequence, nodeId), :);
     % Ambil tetangga dari hasil
-    if ~isempty(nodeResult) && ismember('neighbor', resultTable.Properties.VariableNames)
+    if ~isempty(nodeResult) && ismember('neighbor', resultTableTime.Properties.VariableNames)
         neighbors = unique(nodeResult.neighbor);
     else
         neighbors = [];
