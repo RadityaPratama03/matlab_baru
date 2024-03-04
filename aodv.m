@@ -17,25 +17,11 @@ start1 = 1;
 
 figure; % Membuat figure baru
 
-% subplot(2, 1, 1);
-% axis([-50 350 -40 120]);
-% title('Jalur PKU');
-% xlabel('Data x');
-% ylabel('Data y');
-% grid on;
-% hold on;
-% 
-% subplot(2, 1, 2);
-% axis([-50 350 -40 120]);
-% title('Jalur PKU');
-% xlabel('Data x');
-% ylabel('Data y');
-% grid on;
-% hold on;
-
 Data_t = unique(t);
 Data_p = unique(p);
 Data_l = unique(l);
+delay = [];
+delay_avg =[];
 
 % Inisialisasi variabel baru dengan zeros
 selectedData = zeros(80, 3);
@@ -200,8 +186,8 @@ end
 % Inisialisasi warna untuk plotting
 warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
 
-% Membuat plot untuk setiap nilai t dari 1 hingga 20
-for t_idx = 1:20
+% Membuat plot untuk setiap nilai t dari 1 hingga 100
+for t_idx = 1:100
     % Mengambil tabel dari dalam cell array
     resultTableTime = group.Result{t_idx};
 
@@ -214,8 +200,11 @@ for t_idx = 1:20
         hold on;
     end
 
+    % Hitung delay_avg
+    delay_avg = zeros(size(resultTableTime, 1), 1);
+
     % Plot data pada subplot pertama
-    subplot(2, 1, 1);
+    subplot(3, 1, 1);
     hold on;
 
     for i = 1:size(resultTableTime, 1)
@@ -228,27 +217,29 @@ for t_idx = 1:20
         else
             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
         end
+
+        % Hitung delay berdasarkan jarak
+        if i > 1
+            d = sqrt((resultTableTime.x(i) - resultTableTime.x(i-1))^2 + (resultTableTime.y(i) - resultTableTime.y(i-1))^2);
+            delay = 4 + 10 * 3 * log(d); % Misalnya, menggunakan model log-distance path loss
+            delay_avg(i) = delay;
+        end
     end  
 
     title(['Plot 1 Data untuk t = ' num2str(t_idx)]);
 
     % Plot garis antar node berdasarkan nilai d pada t saat ini
     for i = 1:size(resultTableTime, 1)-1
-        d = resultTableTime.d(i);
+        d = sqrt((resultTableTime.x(i) - resultTableTime.x(i+1))^2 + (resultTableTime.y(i) - resultTableTime.y(i+1))^2);
         if d <= 300
             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
         else
             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
-%             % Tidak memplot garis jika nilai d > 300 (node terputus)
-%             if i > 1 && resultTableTime.d(i-1) <= 300
-%                 % Jika node sebelumnya terhubung (d <= 300), maka node saat ini yang awalnya terputus bisa terhubung kembali
-%                 plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
-%             end
         end
     end
 
     % Plot data pada subplot kedua
-    subplot(2, 1, 2);
+    subplot(3, 1, 2);
     hold on;
 
     % Tentukan indeks head cluster di grafik pertama
@@ -279,7 +270,7 @@ for t_idx = 1:20
     
     % Plot garis antar node berdasarkan nilai d pada t saat ini
     for i = 1:size(resultTableTime, 1)-1
-        d = resultTableTime.d(i);
+        d = sqrt((resultTableTime.x(i) - resultTableTime.x(i+1))^2 + (resultTableTime.y(i) - resultTableTime.y(i+1))^2);
         if d <= 300
             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
         else
@@ -295,20 +286,153 @@ for t_idx = 1:20
         end
     end
   
+    % Plot delay pada subplot ketiga
+    subplot(3, 1, 3);
+    plot(delay_avg, 'b-');
+    title(['Delay untuk t = ' num2str(t_idx)]);
+    xlabel('Node');
+    ylabel('Delay');
+    grid on;
+
+    % Tunggu sejenak agar plot dapat diperbarui
+    drawnow;
     pause(0.01);
-
 end
-hold off; 
 
-% Tentukan jumlah baris yang ingin digunakan
-jumlah_baris = 39; % misalnya 120 baris
+hold off;
 
-% Ambil sejumlah baris tertentu dari tabel result
-data_terbatas = result(1:jumlah_baris, :);
+
+% % Inisialisasi warna untuk plotting
+% warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
+% 
+% % Membuat plot untuk setiap nilai t dari 1 hingga 20
+% for t_idx = 1:100
+%     % Mengambil tabel dari dalam cell array
+%     resultTableTime = group.Result{t_idx};
+% 
+%     % Membuat plot (digunakan 'hold on' hanya pada iterasi pertama)
+%     if t_idx == 1
+%         hold on;
+%     else
+%         % Membersihkan figur sebelum memplot iterasi berikutnya
+%         clf;
+%         hold on;
+%     end
+% 
+%     % Iterasi untuk setiap node pada waktu t_idx
+%     for i = 1:size(resultTableTime, 1)
+%         % Hitung delay berdasarkan jarak
+%         delay = 4 + 10 * 3 * log(resultTableTime.d(i)); % Misalnya, menggunakan model log-distance path loss
+% 
+%         % Simpan nilai delay pada tabel atau variabel yang sesuai
+%         delay_avg(t_idx, i) = delay; % Simpan nilai delay untuk plotting atau analisis selanjutnya
+% 
+%     end
+% 
+%     % Plot data pada subplot pertama
+%     subplot(3, 1, 1);
+%     hold on;
+% 
+%     for i = 1:size(resultTableTime, 1)
+%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
+%         elseif strcmp(resultTableTime.color{i}, 'blue')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
+%         elseif strcmp(resultTableTime.color{i}, 'red')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'red', 'LineWidth', 1);
+%         else
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', warna{mod(i, length(warna)) + 1}, 'MarkerSize', 8, 'MarkerFaceColor', warna{mod(i, length(warna)) + 1}, 'LineWidth', 1);
+%         end
+%     end  
+% 
+%     title(['Plot 1 Data untuk t = ' num2str(t_idx)]);
+% 
+%     % Plot garis antar node berdasarkan nilai d pada t saat ini
+%     for i = 1:size(resultTableTime, 1)-1
+%         d = resultTableTime.d(i);
+%         if d <= 300
+%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+%         else
+%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'r--', 'LineWidth', 1);
+% %             % Tidak memplot garis jika nilai d > 300 (node terputus)
+% %             if i > 1 && resultTableTime.d(i-1) <= 300
+% %                 % Jika node sebelumnya terhubung (d <= 300), maka node saat ini yang awalnya terputus bisa terhubung kembali
+% %                 plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+% %             end
+%         end
+%     end
+% 
+%     % Plot data pada subplot kedua
+%     subplot(3, 1, 2);
+%     hold on;
+% 
+%     % Tentukan indeks head cluster di grafik pertama
+%     originalHeadClusterIndex = find(strcmp(group.Result{1}.color, 'Head Cluster'));
+%     
+%     % Tentukan indeks head cluster di grafik kedua
+%     newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resultTableTime, 1)) + 1;
+%     
+%     % Tentukan node yang ditinggalkan oleh head cluster
+%     nodesDitinggalkan = originalHeadClusterIndex(originalHeadClusterIndex ~= newHeadClusterIndex);
+% 
+%     for i = 1:size(resultTableTime, 1)
+%         if i == newHeadClusterIndex
+%             % Plot head cluster baru sebagai 'X' hijau
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'X', 'Color', 'green', 'MarkerSize', 15, 'MarkerFaceColor', 'green', 'LineWidth', 1.5);
+%         elseif strcmp(resultTableTime.color{i}, 'red')
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'red', 'LineWidth', 1);
+%         elseif ~any(i == nodesDitinggalkan)
+%             % Plot node yang tersisa sebagai 'o' biru
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
+%         else
+%             % Plot semua node lainnya sebagai biru
+%             plot(resultTableTime.x(i), resultTableTime.y(i), 'o', 'Color', 'blue', 'MarkerSize', 8, 'MarkerFaceColor', 'blue', 'LineWidth', 1);
+%         end
+%     end
+%     
+%     title(['Plot 2 Data untuk t = ' num2str(t_idx)]);
+%     
+%     % Plot garis antar node berdasarkan nilai d pada t saat ini
+%     for i = 1:size(resultTableTime, 1)-1
+%         d = resultTableTime.d(i);
+%         if d <= 300
+%             plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+%         else
+%             % Tidak memplot garis jika nilai d > 300 (node terputus)
+%             if i > 1 && resultTableTime.d(i-1) 
+%                 % Cari node untuk koneksi yang tersisa
+%                 nodeUntukKoneksi = setdiff(1:size(resultTableTime, 1), [i, nodesDitinggalkan]);
+%                 % Jika ada node yang tersisa untuk koneksi, hubungkan dengan salah satu dari mereka
+%                 if ~isempty(nodeUntukKoneksi)
+%                     plot([resultTableTime.x(i), resultTableTime.x(nodeUntukKoneksi(1))], [resultTableTime.y(i), resultTableTime.y(nodeUntukKoneksi(1))], 'r--', 'LineWidth', 1);
+%                 end
+%             end
+%         end
+%     end
+%   
+%     pause(0.01);
+% 
+%     % Plot delay pada subplot ketiga
+%     subplot(3, 1, 3);
+%     plot(delay_avg(t_idx, :), 'b-');
+%     title(['Delay untuk t = ' num2str(t_idx)]);
+%     xlabel('Node');
+%     ylabel('Delay');
+%     grid on;
+% 
+% 
+% end
+% hold off; 
+
+% % Tentukan jumlah baris yang ingin digunakan
+% jumlah_baris = 39; % misalnya 120 baris
+% 
+% % Ambil sejumlah baris tertentu dari tabel result
+% data_terbatas = result(1:jumlah_baris, :);
 
 % Mengambil jumlah unik dari kolom 'id' dalam tabel 'data_terbatas' untuk mendapatkan jumlah node
-numNodes = numel(unique(data_terbatas.sequence));
-% numNodes = height(unique(result.sequence));
+% numNodes = numel(unique(data_terbatas.sequence));
+numNodes = height(unique(result.sequence));
 
 % Inisialisasi AODV
 status = repmat('?', 1, numNodes);
