@@ -324,7 +324,7 @@ for t = 1:100
 %             end
 %         end
 %     end
-%=====================================================================
+
 %     % Membuat ulang koneksi berdasarkan nilai d terkecil
 %     [~, sortedIdx] = sort(resulttime.d); % Mengurutkan indeks berdasarkan nilai d
 %     for i = 1:size(resulttime.koneksi, 1)
