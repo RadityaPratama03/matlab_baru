@@ -21,11 +21,6 @@ B5 = 30;
 A6 = 500; % Satuan Kbps 
 B6 = 30;
 
-% % Sistem Delay
-% C = 5;
-% % D = 4;
-% D = 2;
-
 % start1 = 11;
 
 figure; % Membuat figure baru
@@ -174,50 +169,14 @@ for t = 1:100
     if ~isempty(headClusterIdx)
         resultTableTime.color{headClusterIdx} = 'Head Cluster';
     end
+    % Menghasilkan nilai acak antara 100 dan 200 untuk setiap baris
 
-%     % Inisialisasi matriks koneksi
-%     resultTableTime.koneksi = zeros(size(resultTableTime, 1), size(resultTableTime, 1));
-%
-%     % Menghitung jumlah koneksi setiap node
-%     numConnections = sum(resultTableTime.koneksi, 2);
-% 
-%     % Membuat koneksi berdasarkan node yang belum mencapai batas
-%     for i = 1:size(resultTableTime.koneksi, 1)
-%         % Jika node belum memiliki dua koneksi
-%         if numConnections(i) < 2
-%             % Koneksi dengan node sebelumnya
-%             if i > 1
-%                 resultTableTime.koneksi(i, i-1) = 1;
-%                 resultTableTime.koneksi(i-1, i) = 1;
-%                 numConnections(i) = numConnections(i) + 1;
-%                 numConnections(i-1) = numConnections(i-1) + 1;
-%             end
-%             % Koneksi dengan node sesudahnya
-%             if i < size(resultTableTime.koneksi, 1)
-%                 resultTableTime.koneksi(i, i+1) = 1;
-%                 resultTableTime.koneksi(i+1, i) = 1;
-%                 numConnections(i) = numConnections(i) + 1;
-%                 numConnections(i+1) = numConnections(i+1) + 1;
-%             end
-%         end
-%     end
-  
-%     % Membuat koneksi berdasarkan node yang belum mencapai batas
-%     for i = 1:size(resultTableTime.koneksi, 1)
-%         % Jika node belum memiliki dua koneksi
-%         if numConnections(i) < 2
-%             % Temukan node lain yang belum mencapai batas dan bisa dikoneksikan
-%             for j = 1:size(resultTableTime.koneksi, 2)
-%                 if i ~= j && numConnections(j) < 2 && resultTableTime.d(i) < 300 && resultTableTime.d(j) < 300
-%                     resultTableTime.koneksi(i, j) = 1;
-%                     resultTableTime.koneksi(j, i) = 1;
-%                     numConnections(i) = numConnections(i) + 1;
-%                     numConnections(j) = numConnections(j) + 1;
-%                     break; % Hanya satu koneksi yang perlu ditambahkan
-%                 end
-%             end
-%         end
-%     end
+    % Tambahkan perhitungan packet dengan nilai berbeda untuk setiap baris
+    pt = randi([200, 300], height(resultTableTime), 1);
+    rt = randi([200, 300], height(resultTableTime), 1); 
+%     rt = pt; 
+    resultTableTime.pt = pt; 
+    resultTableTime.rt = rt; 
 
     % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
     group.Result{t} = resultTableTime;
@@ -298,47 +257,21 @@ for t = 1:100
         end
     end
 
+    % Tambahkan perhitungan packet dengan nilai berbeda untuk setiap baris
+    pt = randi([200, 300], height(resulttime), 1); % Menghasilkan nilai acak antara 200 dan 300 untuk setiap baris
+    rt = randi([200, 300], height(resulttime), 1); % Menghasilkan nilai acak antara 200 dan 300 untuk setiap baris
+%     rt = pt; % rt memiliki nilai yang sama dengan pt
+    resulttime.pt = pt; % Menambahkan kolom pt ke tabel
+    resulttime.rt = rt; % Menambahkan kolom rt ke tabel
 
-%     % Inisialisasi matriks koneksi
-%     resulttime.koneksi = zeros(size(resulttime, 1), size(resulttime, 1));
-% 
-%     % Nonaktifkan koneksi ke node-node merah
-%     redNodesIdx = find(strcmp(resulttime.color, 'red'));
-%     if ~isempty(redNodesIdx)
-%         for i = 1:length(redNodesIdx)
-%             redNode = redNodesIdx(i);
-%             resulttime.koneksi(redNode, :) = 0; % Nonaktifkan koneksi ke node lain
-%             resulttime.koneksi(:, redNode) = 0; % Nonaktifkan koneksi dari node lain
-%         end
-%     end
-% 
-%     % Membuat koneksi ulang berdasarkan node yang tidak terkoneksi
-%     for i = 1:size(resulttime.koneksi, 1)
-%         if sum(resulttime.koneksi(i, :)) == 0 % Jika node belum terkoneksi dengan siapa pun
-%             for j = 1:size(resulttime.koneksi, 2)
-%                 if i ~= j && sum(resulttime.koneksi(j, :)) < 2 && resulttime.d(i) < 300 && resulttime.d(j) < 300
-%                     resulttime.koneksi(i, j) = 1;
-%                     resulttime.koneksi(j, i) = 1;
-%                     break; % Hanya satu koneksi yang perlu ditambahkan
-%                 end
-%             end
-%         end
-%     end
-
-%     % Membuat ulang koneksi berdasarkan nilai d terkecil
-%     [~, sortedIdx] = sort(resulttime.d); % Mengurutkan indeks berdasarkan nilai d
-%     for i = 1:size(resulttime.koneksi, 1)
-%         if sum(resulttime.koneksi(i, :)) == 0 % Jika node belum terkoneksi dengan siapa pun
-%             for j = 1:size(resulttime.koneksi, 2)
-%                 node = sortedIdx(j);
-%                 if i ~= node && min(resulttime.koneksi(node, :)) < 2 && resulttime.d(i) < 300 && resulttime.d(node) < 300
-%                     resulttime.koneksi(i, node) = 1;
-%                     resulttime.koneksi(node, i) = 1;
-%                     break; % Hanya satu koneksi yang perlu ditambahkan
-%                 end
-%             end
-%         end
-%     end
+    % Set pt dan rt menjadi 0 untuk node yang memiliki warna merah
+    if ~isempty(redNodesIdx)
+        for i = 1:length(redNodesIdx)
+            redNode = redNodesIdx(i);
+            resulttime.pt(redNode, :) = 0;
+            resulttime.rt(redNode, :) = 0;
+        end
+    end
 
     % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
     group.ResultTime{t} = resulttime;
@@ -348,6 +281,243 @@ for t = 1:100
     clear headClusterIdx maxD minD;
 %     clear randomNode redNodesIdx;
 end
+
+% Inisialisasi warna untuk plotting
+warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
+
+% Inisialisasi delay dan throughput
+delay1 = zeros(1, 100);
+throughput1 = zeros(1, 100);
+
+% Inisialisasi delay dan throughput
+delay2 = zeros(1, 100);
+throughput2 = zeros(1, 100);
+
+% Membuat plot untuk setiap nilai t dari 1 hingga 40
+for t_idx = 1:40
+    % Membersihkan figur pertama sebelum memplot iterasi berikutnya
+    figure(1);
+    clf;
+    cla;
+    axis([-50 350 -40 120]);
+%     title('Jalur PKU - Node Kendaraan & Head Cluster');
+    title(['Jalur PKU - Node Kendaraan & Head Cluster - Iterasi ', num2str(t_idx)]);
+    xlabel('Data x');
+    ylabel('Data y');
+    grid on;
+    hold on;
+
+    % Membersihkan figur kedua sebelum memplot iterasi berikutnya
+    figure(2);
+    clf;
+    cla;
+    axis([-50 350 -40 120]);
+%     title('Jalur PKU - Node Kendaraan & Malicious');
+    title(['Jalur PKU - Node Kendaraan & Malicious - Iterasi ', num2str(t_idx)]);
+    xlabel('Data x');
+    ylabel('Data y');
+    grid on;
+    hold on;
+
+    % Membersihkan figur delay sebelum memplot iterasi berikutnya
+    figure(3);
+%     axis([10 inf 155 283]);
+%     axis([10 inf 0 200]);
+    axis('auto');
+    title('Delay');
+    xlabel('Jumlah Kendaraan (s)');
+    ylabel('Delay (ms)');
+    grid on;
+    hold on;
+
+    % Membersihkan figur throughput sebelum memplot iterasi berikutnya
+    figure(4);
+    axis('auto');
+    title('Throughput');
+    xlabel('Jumlah Kendaraan (s)');
+    ylabel('Throughput (kbps)');
+    grid on;
+    hold on;
+
+    % Mengambil tabel dari dalam cell array untuk plot pertama
+    resultTableTime = group.Result{t_idx};
+
+    for i = 1:size(resultTableTime, 1)        
+        if strcmp(resultTableTime.color{i}, 'Head Cluster')
+            figure(1);
+            scatter(resultTableTime.x(i), resultTableTime.y(i), 100, 'green', 'X', 'LineWidth', 1.5); % Simbol X untuk Head Cluster
+        elseif strcmp(resultTableTime.color{i}, 'blue')
+            figure(1);
+            scatter(resultTableTime.x(i), resultTableTime.y(i), 64, 'blue', 'o', 'filled'); % Titik-titik biru
+        end
+        
+        % Plot garis antar node
+        if i < size(resultTableTime, 1)
+            figure(1);
+            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
+        end
+    end
+
+    % Menambahkan legenda untuk figure pertama
+    figure(1);
+    hold on; 
+    h1 = scatter(NaN, NaN, 100, 'green', 'X', 'LineWidth', 1.5); 
+    h2 = scatter(NaN, NaN, 64, 'blue', 'o', 'filled'); 
+    leg1 = legend([h1, h2], 'Head Cluster', 'Node Kendaraan', 'Location', 'northeast');
+    set(leg1, 'Box', 'on');
+    hold off; 
+
+    % Mengambil tabel dari dalam cell array untuk plot kedua
+    resulttime = group.ResultTime{t_idx};
+
+    % Plot data pada figure kedua
+    % Tentukan indeks head cluster di grafik pertama
+    originalHeadClusterIndex = find(strcmp(group.ResultTime{1}.color, 'Head Cluster'));
+    % Tentukan indeks head cluster di grafik kedua
+    newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resulttime, 1)) + 1;
+    % Tentukan node yang ditinggalkan oleh head cluster
+    nodesDitinggalkan = originalHeadClusterIndex(originalHeadClusterIndex ~= newHeadClusterIndex);
+
+    for i = 1:size(resulttime, 1)
+        if i == newHeadClusterIndex
+            figure(2);
+            scatter(resulttime.x(i), resulttime.y(i), 100, 'g', 'X', 'LineWidth', 1.5);
+        elseif strcmp(resulttime.color{i}, 'red') || strcmp(resulttime.color{i}, 'Malicious')
+            figure(2);
+            scatter(resulttime.x(i), resulttime.y(i), 64, 'r', 'filled');  % Mengganti warna node merah
+        elseif ~any(i == nodesDitinggalkan)
+            figure(2);
+            scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
+        else
+            figure(2);
+            scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
+        end
+
+        % Menggambar koneksi antar node
+        for i = 1:size(resulttime.koneksi, 1)
+            for j = i+1:size(resulttime.koneksi, 2)
+                if resulttime.koneksi(i, j) == 1 && ~strcmp(resulttime.color{i}, 'red') && ~strcmp(resulttime.color{j}, 'red')
+                    figure(2);
+                    plot([resulttime.x(i), resulttime.x(j)], [resulttime.y(i), resulttime.y(j)], 'b--', 'LineWidth', 1);
+                end
+            end
+        end
+    end
+
+    % Menambahkan legenda untuk figure kedua
+    figure(2);
+    hold on; 
+    h1 = scatter(NaN, NaN, 100, 'green', 'X', 'LineWidth', 1.5); 
+    h2 = scatter(NaN, NaN, 64, 'blue', 'o', 'filled');
+    h3 = scatter(NaN, NaN, 64, 'red', 'o', 'filled');
+    leg2 = legend([h1, h2, h3], 'Head Cluster', 'Node Kendaraan', 'Malicious', 'Location', 'northeast');
+    set(leg2, 'Box', 'on');
+    hold off; 
+
+    % Perhitungan delay dan throughput pada detik t_idx untuk group.Result
+    total_pt_1 = sum(group.Result{t_idx}.pt);
+    total_rt_1 = sum(group.Result{t_idx}.rt);
+    Delay1 = total_pt_1 / max(total_rt_1, 1);
+    Throughput1 = total_rt_1 / max(total_pt_1, 1);
+
+    % Perhitungan delay dan throughput pada detik t_idx untuk group.ResultTime
+    total_pt_2 = sum(group.ResultTime{t_idx}.pt);
+    total_rt_2 = sum(group.ResultTime{t_idx}.rt);
+    Delay2 = total_pt_2 / max(total_rt_2, 1);
+    Throughput2 = total_rt_2 / max(total_pt_2, 1);
+
+    % Menyimpan hasil perhitungan delay dan throughput
+    delay1(t_idx) = Delay1;
+    throughput1(t_idx) = Throughput1;
+
+    delay2(t_idx) = Delay2;
+    throughput2(t_idx) = Throughput2;
+
+    % Plot delay
+    figure(3);
+    plot(1:t_idx, delay1(1:t_idx), 'g.-'); % Plot delay dari figure 1
+    hold on;
+    plot(1:t_idx, delay2(1:t_idx), 'r.-');
+    h_delay = legend('Normal', 'Under Attack', 'Location', 'northeast');
+    set(h_delay, 'Box', 'on');  % Menghilangkan kotak di sekitar legenda
+    hold off;
+
+    % Plot throughput
+    figure(4);
+    plot(1:t_idx, throughput1(1:t_idx), 'g.-'); % Plot throughput dari figure 1
+    hold on;
+    plot(1:t_idx, throughput2(1:t_idx), 'r.-');
+    h_throughput = legend('Normal', 'Under Attack', 'Location', 'northeast');
+    set(h_throughput, 'Box', 'on');  % Menghilangkan kotak di sekitar legenda
+    hold off;
+
+%     % Inisialisasi matriks untuk menyimpan data delay dan throughput
+%     Delay_avg1 = zeros(size(resultTableTime, 1), 1);
+%     Throughput_avg1 = zeros(size(resultTableTime, 1), 1);
+% 
+%     % Inisialisasi matriks untuk menyimpan data delay dan throughput dari figure 2
+%     Delay_avg2 = zeros(size(resulttime, 1), 1);
+%     Throughput_avg2 = zeros(size(resulttime, 1), 1);
+% 
+%     %===============================================================================
+% 
+%     % Hitung total waktu pengiriman dan paket diterima dari hasil percobaan pertama
+%     total_waktu_pengiriman1 = sum(resultTableTime.pt);
+%     paket_diterima1 = sum(resultTableTime.rt);
+%     
+%     % Menghitung delay dan throughput untuk resulttabletime
+%     Delay1 = total_waktu_pengiriman1 / paket_diterima1;
+%     Throughput1 = paket_diterima1 / total_waktu_pengiriman1;
+% 
+%     % Menghitung delay dan throughput untuk resulttime
+%     total_waktu_pengiriman2 = sum(resulttime.pt); 
+%     paket_diterima2 = sum(resulttime.rt); 
+% 
+%     Delay2 = total_waktu_pengiriman2 / paket_diterima2;
+%     Throughput2 = paket_diterima2 / total_waktu_pengiriman2;
+% 
+%     %===============================================================================
+% 
+%     % Menyimpan hasil perhitungan delay dan throughput
+%     delay1(t_idx) = Delay1;
+%     throughput1(t_idx) = Throughput1;
+%     
+%     % Menambahkan hasil perhitungan delay dan throughput ke delay dan throughput total
+%     delay1(t_idx) = Delay_avg1(end); % Mengambil delay untuk data terakhir dari resultTableTime
+%     throughput1(t_idx) = Throughput_avg1(end); % Mengambil throughput untuk data terakhir dari resultTableTime
+% 
+%     % Menyimpan hasil perhitungan delay dan throughput
+%     delay2(t_idx) = Delay2;
+%     throughput2(t_idx) = Throughput2;
+% 
+%     % Menambahkan hasil perhitungan delay dan throughput ke delay dan throughput total
+%     delay2(t_idx) = Delay_avg2(end); % Mengambil delay untuk data terakhir dari resulttime
+%     throughput2(t_idx) = Throughput_avg2(end); % Mengambil throughput untuk data terakhir dari resulttime
+% 
+%     % Plotting delay
+%     figure(3);
+%     plot(1:t_idx, delay1(1:t_idx), 'g.-'); % Plot delay dari figure 1
+%     hold on;
+%     plot(1:t_idx, delay2(1:t_idx), 'r.-');
+%     h_delay = legend('Normal', 'Under Attack', 'Location', 'northeast');
+%     set(h_delay, 'Box', 'on');  % Menghilangkan kotak di sekitar legenda
+%     hold off;
+%     
+%     % Plotting throughput
+%     figure(4);
+%     plot(1:t_idx, throughput1(1:t_idx), 'g.-'); % Plot throughput dari figure 1
+%     hold on;
+%     plot(1:t_idx, throughput2(1:t_idx), 'r.-');
+%     h_throughput = legend('Normal', 'Under Attack', 'Location', 'northeast');
+%     set(h_throughput, 'Box', 'on');  % Menghilangkan kotak di sekitar legenda
+%     hold off;
+    
+
+    % Menunggu sebelum beralih ke iterasi berikutnya
+    pause(4.00);
+end
+
+hold off;
 
 % % Mengambil jumlah unik dari kolom 'sequence' dalam tabel 'result' untuk mendapatkan jumlah node
 % numNodes = height(unique(result.sequence));
@@ -474,7 +644,7 @@ end
 % % Tampilkan hasil rute
 % disp('AODV Route:');
 % disp(route);
-% 
+
 % % Inisialisasi daftar sensor berbahaya
 % M = {};
 % 
@@ -541,264 +711,6 @@ end
 % % Tampilkan hasil
 % disp('Daftar sensor berbahaya:');
 % disp(M);
-
-% Inisialisasi warna untuk plotting
-warna = {'blue', 'red', 'green', 'black', 'cyan', 'magenta', 'yellow', 'white'};
-
-% Inisialisasi delay dan throughput
-delay1 = zeros(1, 100);
-throughput1 = zeros(1, 100);
-
-% Inisialisasi delay dan throughput
-delay2 = zeros(1, 100);
-throughput2 = zeros(1, 100);
-
-% Membuat plot untuk setiap nilai t dari 1 hingga 40
-for t_idx = 1:3
-    % Membersihkan figur pertama sebelum memplot iterasi berikutnya
-    figure(1);
-    clf;
-    cla;
-    axis([-50 350 -40 120]);
-%     title('Jalur PKU - Node Kendaraan & Head Cluster');
-    title(['Jalur PKU - Node Kendaraan & Head Cluster - Iterasi ', num2str(t_idx)]);
-    xlabel('Data x');
-    ylabel('Data y');
-    grid on;
-    hold on;
-
-    % Membersihkan figur kedua sebelum memplot iterasi berikutnya
-    figure(2);
-    clf;
-    cla;
-    axis([-50 350 -40 120]);
-%     title('Jalur PKU - Node Kendaraan & Malicious');
-    title(['Jalur PKU - Node Kendaraan & Malicious - Iterasi ', num2str(t_idx)]);
-    xlabel('Data x');
-    ylabel('Data y');
-    grid on;
-    hold on;
-
-    % Membersihkan figur delay sebelum memplot iterasi berikutnya
-    figure(3);
-%     axis([10 inf 155 283]);
-%     axis([10 inf 0 200]);
-    axis('auto');
-    title('Delay');
-    xlabel('Jumlah Kendaraan (s)');
-    ylabel('Delay (ms)');
-    grid on;
-    hold on;
-
-    % Membersihkan figur throughput sebelum memplot iterasi berikutnya
-    figure(4);
-    axis('auto');
-    title('Throughput');
-    xlabel('Jumlah Kendaraan (s)');
-    ylabel('Throughput (kbps)');
-    grid on;
-    hold on;
-
-    % Mengambil tabel dari dalam cell array untuk plot pertama
-    resultTableTime = group.Result{t_idx};
-
-    for i = 1:size(resultTableTime, 1)        
-        if strcmp(resultTableTime.color{i}, 'Head Cluster')
-            figure(1);
-            scatter(resultTableTime.x(i), resultTableTime.y(i), 100, 'green', 'X', 'LineWidth', 1.5); % Simbol X untuk Head Cluster
-        elseif strcmp(resultTableTime.color{i}, 'blue')
-            figure(1);
-            scatter(resultTableTime.x(i), resultTableTime.y(i), 64, 'blue', 'o', 'filled'); % Titik-titik biru
-        end
-        
-        % Plot garis antar node
-        if i < size(resultTableTime, 1)
-            figure(1);
-            plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
-        end
-        
-%         % Menggambar koneksi antar node
-%         connectedNodes = find(resultTableTime.koneksi(i, :) == 1);
-%         for j = 1:length(connectedNodes)
-%             node = connectedNodes(j);
-%             if i < node
-%                 figure(1);
-%                 plot([resultTableTime.x(i), resultTableTime.x(node)], [resultTableTime.y(i), resultTableTime.y(node)], 'b--', 'LineWidth', 1);
-%             end
-%         end
-    end
-
-
-%     for i = 1:size(resultTableTime, 1)        
-%         if strcmp(resultTableTime.color{i}, 'Head Cluster')
-%             figure(1);
-%             scatter(resultTableTime.x(i), resultTableTime.y(i), 100, 'green', 'X', 'LineWidth', 1.5); % Simbol X untuk Head Cluster
-%         elseif strcmp(resultTableTime.color{i}, 'blue')
-%             figure(1);
-%             scatter(resultTableTime.x(i), resultTableTime.y(i), 64, 'blue', 'o', 'filled'); % Titik-titik biru
-%         end
-%         
-%         % Plot garis antar node berdasarkan nilai d pada t saat ini
-%         if i < size(resultTableTime, 1)
-%             d = resultTableTime.d(i);
-%             if d <= 300
-%                 figure(1);
-%                 plot([resultTableTime.x(i), resultTableTime.x(i+1)], [resultTableTime.y(i), resultTableTime.y(i+1)], 'b--', 'LineWidth', 1);
-%             end
-%         end
-%         
-%         % Menggambar koneksi antar node
-%         connectedNodes = find(resultTableTime.koneksi(i, :) == 1);
-%         for j = 1:length(connectedNodes)
-%             node = connectedNodes(j);
-%             if i < node && resultTableTime.d(i) <= 300 && resultTableTime.d(node) <= 300
-%                 figure(1);
-%                 plot([resultTableTime.x(i), resultTableTime.x(node)], [resultTableTime.y(i), resultTableTime.y(node)], 'b--', 'LineWidth', 1);
-%             end
-%         end
-%     end
-
-    % Menambahkan legenda untuk figure pertama
-    figure(1);
-    hold on; 
-    h1 = scatter(NaN, NaN, 100, 'green', 'X', 'LineWidth', 1.5); 
-    h2 = scatter(NaN, NaN, 64, 'blue', 'o', 'filled'); 
-    leg1 = legend([h1, h2], 'Head Cluster', 'Node Kendaraan', 'Location', 'northeast');
-    set(leg1, 'Box', 'off');
-    hold off; 
-
-    % Mengambil tabel dari dalam cell array untuk plot kedua
-    resulttime = group.ResultTime{t_idx};
-
-    % Plot data pada figure kedua
-    % Tentukan indeks head cluster di grafik pertama
-    originalHeadClusterIndex = find(strcmp(group.ResultTime{1}.color, 'Head Cluster'));
-    % Tentukan indeks head cluster di grafik kedua
-    newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resulttime, 1)) + 1;
-    % Tentukan node yang ditinggalkan oleh head cluster
-    nodesDitinggalkan = originalHeadClusterIndex(originalHeadClusterIndex ~= newHeadClusterIndex);
-
-    for i = 1:size(resulttime, 1)
-        if i == newHeadClusterIndex
-            figure(2);
-            scatter(resulttime.x(i), resulttime.y(i), 100, 'g', 'X', 'LineWidth', 1.5);
-        elseif strcmp(resulttime.color{i}, 'red') || strcmp(resulttime.color{i}, 'Malicious')
-            figure(2);
-            scatter(resulttime.x(i), resulttime.y(i), 64, 'r', 'filled');  % Mengganti warna node merah
-        elseif ~any(i == nodesDitinggalkan)
-            figure(2);
-            scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
-        else
-            figure(2);
-            scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
-        end
-
-        % Menggambar koneksi antar node
-        for i = 1:size(resulttime.koneksi, 1)
-            for j = i+1:size(resulttime.koneksi, 2)
-                if resulttime.koneksi(i, j) == 1 && ~strcmp(resulttime.color{i}, 'red') && ~strcmp(resulttime.color{j}, 'red')
-                    figure(2);
-                    plot([resulttime.x(i), resulttime.x(j)], [resulttime.y(i), resulttime.y(j)], 'b--', 'LineWidth', 1);
-                end
-            end
-        end
-    end
-
-    % Menambahkan legenda untuk figure kedua
-    figure(2);
-    hold on; 
-    h1 = scatter(NaN, NaN, 100, 'green', 'X', 'LineWidth', 1.5); 
-    h2 = scatter(NaN, NaN, 64, 'blue', 'o', 'filled');
-    h3 = scatter(NaN, NaN, 64, 'red', 'o', 'filled');
-    leg2 = legend([h1, h2, h3], 'Head Cluster', 'Node Kendaraan', 'Malicious', 'Location', 'northeast');
-    set(leg2, 'Box', 'off');
-    hold off; 
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % Inisialisasi matriks untuk menyimpan data delay dan throughput
-    Delay_avg1 = zeros(size(resultTableTime, 1), 1);
-    Throughput_avg1 = zeros(size(resultTableTime, 1), 1);
-
-    % Inisialisasi matriks untuk menyimpan data delay dan throughput dari figure 2
-    Delay_avg2 = zeros(size(resulttime, 1), 1);
-    Throughput_avg2 = zeros(size(resulttime, 1), 1);
-    
-    % Variabel untuk delay dan throughput
-    factor_delay = 3;
-    factor_throughput = 2;
-
-    % Iterasi untuk setiap titik data dalam resultTableTime
-    for i = 2:size(resultTableTime, 1)
-        % Menghitung delay dan throughput untuk figure 1
-        Delay1 = 2 + 10 * factor_delay;
-        Throughput1 = A6 - B6 * factor_throughput;
-        
-        % Menyimpan nilai delay dan throughput untuk titik data ke-i dari figure 1
-        Delay_avg1(i) = Delay1;
-        Throughput_avg1(i) = Throughput1;
-        
-        % Update faktor untuk iterasi berikutnya
-        factor_delay = factor_delay + 1;
-        factor_throughput = factor_throughput + 1;
-    end
-    
-    % Iterasi untuk setiap titik data dalam resulttime
-    for i = 2:size(resulttime, 1)
-        % Menghitung delay dan throughput untuk figure 2
-        Delay2 = 2 + 10 * factor_delay;
-        Throughput2 = A6 - B6 * factor_throughput;
-        
-        % Menyimpan nilai delay dan throughput untuk titik data ke-i dari figure 2
-        Delay_avg2(i) = Delay2;
-        Throughput_avg2(i) = Throughput2;
-        
-        % Update faktor untuk iterasi berikutnya
-        factor_delay = factor_delay + 1;
-        factor_throughput = factor_throughput + 1;
-    end
-    
-    % Menyimpan hasil perhitungan delay dan throughput
-    delay1(t_idx) = Delay1;
-    throughput1(t_idx) = Throughput1;
-    
-    % Menambahkan hasil perhitungan delay dan throughput ke delay dan throughput total
-    delay1(t_idx) = Delay_avg1(end); % Mengambil delay untuk data terakhir dari resultTableTime
-    throughput1(t_idx) = Throughput_avg1(end); % Mengambil throughput untuk data terakhir dari resultTableTime
-
-    % Menyimpan hasil perhitungan delay dan throughput
-    delay2(t_idx) = Delay2;
-    throughput2(t_idx) = Throughput2;
-
-    % Menambahkan hasil perhitungan delay dan throughput ke delay dan throughput total
-    delay2(t_idx) = Delay_avg2(end); % Mengambil delay untuk data terakhir dari resulttime
-    throughput2(t_idx) = Throughput_avg2(end); % Mengambil throughput untuk data terakhir dari resulttime
-
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    % Plotting delay
-    figure(3);
-    plot(1:t_idx, delay1(1:t_idx), 'g.-'); % Plot delay dari figure 1
-    hold on;
-    plot(1:t_idx, delay2(1:t_idx), 'r.-');
-    h_delay = legend('Normal', 'Under Attack', 'Location', 'northeast');
-    set(h_delay, 'Box', 'off');  % Menghilangkan kotak di sekitar legenda
-    hold off;
-    
-    % Plotting throughput
-    figure(4);
-    plot(1:t_idx, throughput1(1:t_idx), 'g.-'); % Plot throughput dari figure 1
-    hold on;
-    plot(1:t_idx, throughput2(1:t_idx), 'r.-');
-    h_throughput = legend('Normal', 'Under Attack', 'Location', 'northeast');
-    set(h_throughput, 'Box', 'off');  % Menghilangkan kotak di sekitar legenda
-    hold off;
-
-    % Menunggu sebelum beralih ke iterasi berikutnya
-    pause(1.00);
-end
-
-hold off;
 
 % % Fungsi untuk mencari tetangga suatu node pada suatu waktu
 % function neighbors = findNeighbor(nodeId, resultTable)
