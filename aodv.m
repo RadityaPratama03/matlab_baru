@@ -169,14 +169,24 @@ for t = 1:100
     if ~isempty(headClusterIdx)
         resultTableTime.color{headClusterIdx} = 'Head Cluster';
     end
-    % Menghasilkan nilai acak antara 100 dan 200 untuk setiap baris
 
-    % Tambahkan perhitungan packet dengan nilai berbeda untuk setiap baris
+    % Menghasilkan nilai acak untuk pt dalam rentang [200, 300]
     pt = randi([200, 300], height(resultTableTime), 1);
-    rt = randi([200, 300], height(resultTableTime), 1); 
-%     rt = pt; 
-    resultTableTime.pt = pt; 
-    resultTableTime.rt = rt; 
+    
+    % Mengatur semua nilai dalam rt menjadi 40
+    rt = repmat(40, height(resultTableTime), 1);
+    
+    % Mengassign nilai yang dihasilkan ke kolom yang sesuai dalam resultTableTime
+    resultTableTime.pt = pt;
+    resultTableTime.rt = rt;
+
+
+%     % Menghasilkan nilai acak antara 100 dan 200 untuk setiap baris
+%     pt = randi([200, 300], height(resultTableTime), 1);
+%     rt = randi([200, 300], height(resultTableTime), 1); 
+% %     rt = pt; 
+%     resultTableTime.pt = pt; 
+%     resultTableTime.rt = rt; 
 
     % Menyimpan tabel yang telah dimodifikasi ke dalam cell array
     group.Result{t} = resultTableTime;
@@ -257,12 +267,23 @@ for t = 1:100
         end
     end
 
-    % Tambahkan perhitungan packet dengan nilai berbeda untuk setiap baris
-    pt = randi([200, 300], height(resulttime), 1); % Menghasilkan nilai acak antara 200 dan 300 untuk setiap baris
-    rt = randi([200, 300], height(resulttime), 1); % Menghasilkan nilai acak antara 200 dan 300 untuk setiap baris
-%     rt = pt; % rt memiliki nilai yang sama dengan pt
-    resulttime.pt = pt; % Menambahkan kolom pt ke tabel
-    resulttime.rt = rt; % Menambahkan kolom rt ke tabel
+    % Menghasilkan nilai acak untuk pt dalam rentang [200, 300]
+    pt = randi([200, 300], height(resulttime), 1);
+    
+    % Mengatur semua nilai dalam rt menjadi 40
+    rt = repmat(40, height(resulttime), 1);
+    
+    % Mengassign nilai yang dihasilkan ke kolom yang sesuai dalam resulttime
+    resulttime.pt = pt;
+    resulttime.rt = rt;
+
+
+%     % Tambahkan perhitungan packet dengan nilai berbeda untuk setiap baris
+%     pt = randi([200, 300], height(resulttime), 1); % Menghasilkan nilai acak antara 200 dan 300 untuk setiap baris
+%     rt = randi([200, 300], height(resulttime), 1); % Menghasilkan nilai acak antara 200 dan 300 untuk setiap baris
+% %     rt = pt; % rt memiliki nilai yang sama dengan pt
+%     resulttime.pt = pt; % Menambahkan kolom pt ke tabel
+%     resulttime.rt = rt; % Menambahkan kolom rt ke tabel
 
     % Set pt dan rt menjadi 0 untuk node yang memiliki warna merah
     if ~isempty(redNodesIdx)
@@ -298,7 +319,7 @@ for t_idx = 1:40
     % Membersihkan figur pertama sebelum memplot iterasi berikutnya
     figure(1);
     clf;
-    cla;
+%     cla;
     axis([-50 350 -40 120]);
 %     title('Jalur PKU - Node Kendaraan & Head Cluster');
     title(['Jalur PKU - Node Kendaraan & Head Cluster - Iterasi ', num2str(t_idx)]);
@@ -310,7 +331,7 @@ for t_idx = 1:40
     % Membersihkan figur kedua sebelum memplot iterasi berikutnya
     figure(2);
     clf;
-    cla;
+%     cla;
     axis([-50 350 -40 120]);
 %     title('Jalur PKU - Node Kendaraan & Malicious');
     title(['Jalur PKU - Node Kendaraan & Malicious - Iterasi ', num2str(t_idx)]);
@@ -418,20 +439,49 @@ for t_idx = 1:40
     total_pt_1 = sum(group.Result{t_idx}.pt);
     total_rt_1 = sum(group.Result{t_idx}.rt);
     Delay1 = total_pt_1 / max(total_rt_1, 1);
-    Throughput1 = total_rt_1 / max(total_pt_1, 1);
-
-    % Perhitungan delay dan throughput pada detik t_idx untuk group.ResultTime
+    
+    % Perhitungan throughput pada detik t_idx untuk group.Result
+    paket_diterima_1 = group.Result{t_idx}.rt; % paket data yang diterima dalam kb
+    waktu_pengiriman_1 = group.Result{t_idx}.pt; % waktu pengiriman dalam detik
+    Throughput1 = paket_diterima_1 ./ max(waktu_pengiriman_1, 1);
+    
+    % Perhitungan delay pada detik t_idx untuk group.ResultTime
     total_pt_2 = sum(group.ResultTime{t_idx}.pt);
     total_rt_2 = sum(group.ResultTime{t_idx}.rt);
     Delay2 = total_pt_2 / max(total_rt_2, 1);
-    Throughput2 = total_rt_2 / max(total_pt_2, 1);
-
+    
+    % Perhitungan throughput pada detik t_idx untuk group.ResultTime
+    paket_diterima_2 = group.ResultTime{t_idx}.rt; % paket data yang diterima dalam kb
+    waktu_pengiriman_2 = group.ResultTime{t_idx}.pt; % waktu pengiriman dalam detik
+    Throughput2 = paket_diterima_2 ./ max(waktu_pengiriman_2, 1);
+    
     % Menyimpan hasil perhitungan delay dan throughput
     delay1(t_idx) = Delay1;
-    throughput1(t_idx) = Throughput1;
-
+    throughput1(t_idx) = mean(Throughput1); % Menggunakan mean untuk mendapatkan nilai rata-rata jika ada beberapa elemen
+    
     delay2(t_idx) = Delay2;
-    throughput2(t_idx) = Throughput2;
+    throughput2(t_idx) = mean(Throughput2); % Menggunakan mean untuk mendapatkan nilai rata-rata jika ada beberapa elemen
+
+
+
+%     % Perhitungan delay dan throughput pada detik t_idx untuk group.Result
+%     total_pt_1 = sum(group.Result{t_idx}.pt);
+%     total_rt_1 = sum(group.Result{t_idx}.rt);
+%     Delay1 = total_pt_1 / max(total_rt_1, 1);
+%     Throughput1 = total_rt_1 / max(total_pt_1, 1);
+% 
+%     % Perhitungan delay dan throughput pada detik t_idx untuk group.ResultTime
+%     total_pt_2 = sum(group.ResultTime{t_idx}.pt);
+%     total_rt_2 = sum(group.ResultTime{t_idx}.rt);
+%     Delay2 = total_pt_2 / max(total_rt_2, 1);
+%     Throughput2 = total_rt_2 / max(total_pt_2, 1);
+% 
+%     % Menyimpan hasil perhitungan delay dan throughput
+%     delay1(t_idx) = Delay1;
+%     throughput1(t_idx) = Throughput1;
+% 
+%     delay2(t_idx) = Delay2;
+%     throughput2(t_idx) = Throughput2;
 
     % Plot delay
     figure(3);
