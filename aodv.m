@@ -270,7 +270,7 @@ for t = 1:100
     resulttime.pt = repmat(pt, height(resulttime), 1);
   
     % Mengatur semua nilai dalam rt menjadi 40
-    rt = repmat(10, height(resulttime), 1);
+    rt = repmat(15, height(resulttime), 1);
 
     resulttime.rt = rt;
 
@@ -304,6 +304,7 @@ throughput2 = zeros(1, 100);
 
 % Membuat plot untuk setiap nilai t dari 1 hingga 40
 for t_idx = 1:20
+    
     % Mengambil tabel dari dalam cell array untuk plot kedua
     resulttime = group.ResultTime{t_idx};
 
@@ -353,6 +354,10 @@ for t_idx = 1:20
     % Mengambil tabel dari dalam cell array untuk plot pertama
     resultTableTime = group.Result{t_idx};
 
+    % Urutkan berdasarkan nilai d
+    [~, idxSorted] = sort(resultTableTime.d);
+    resultTableTime = resultTableTime(idxSorted, :);
+
     for i = 1:size(resultTableTime, 1)        
         if strcmp(resultTableTime.color{i}, 'Head Cluster')
             figure(1);
@@ -381,13 +386,9 @@ for t_idx = 1:20
     % Mengambil tabel dari dalam cell array untuk plot kedua
     resulttime = group.ResultTime{t_idx};
 
-    % Plot data pada figure kedua
-    % Tentukan indeks head cluster di grafik pertama
-    originalHeadClusterIndex = find(strcmp(group.ResultTime{1}.color, 'Head Cluster'));
-    % Tentukan indeks head cluster di grafik kedua
-    newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resulttime, 1)) + 1;
-    % Tentukan node yang ditinggalkan oleh head cluster
-    nodesDitinggalkan = originalHeadClusterIndex(originalHeadClusterIndex ~= newHeadClusterIndex);
+    % Menentukan newHeadCluster berdasarkan nilai d terkecil yang tidak 'red'
+    minD = min(resulttime.d(~strcmp(resulttime.color, 'red')));
+    newHeadClusterIndex = find(resulttime.d == minD, 1);
 
     for i = 1:size(resulttime, 1)
         if i == newHeadClusterIndex
@@ -396,24 +397,55 @@ for t_idx = 1:20
         elseif strcmp(resulttime.color{i}, 'red') || strcmp(resulttime.color{i}, 'Malicious')
             figure(2);
             scatter(resulttime.x(i), resulttime.y(i), 64, 'r', 'filled'); 
-        elseif ~any(i == nodesDitinggalkan)
-            figure(2);
-            scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
         else
             figure(2);
             scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
+%         else
+%             figure(2);
+%             scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
         end
 
         % Menggambar koneksi antar node
-        for i = 1:size(resulttime.koneksi, 1)
-            for j = i+1:size(resulttime.koneksi, 2)
-                if resulttime.koneksi(i, j) == 1 && ~strcmp(resulttime.color{i}, 'red') && ~strcmp(resulttime.color{j}, 'red')
-                    figure(2);
-                    plot([resulttime.x(i), resulttime.x(j)], [resulttime.y(i), resulttime.y(j)], 'b--', 'LineWidth', 1);
-                end
+        for j = i + 1:size(resulttime.koneksi, 2)
+            if resulttime.koneksi(i, j) == 1 && ~strcmp(resulttime.color{i}, 'red') && ~strcmp(resulttime.color{j}, 'red')
+                plot([resulttime.x(i), resulttime.x(j)], [resulttime.y(i), resulttime.y(j)], 'b--', 'LineWidth', 1);
             end
         end
     end
+
+%     % Plot data pada figure kedua
+%     % Tentukan indeks head cluster di grafik pertama
+%     originalHeadClusterIndex = find(strcmp(group.ResultTime{1}.color, 'Head Cluster'));
+%     % Tentukan indeks head cluster di grafik kedua
+%     newHeadClusterIndex = mod(originalHeadClusterIndex + t_idx - 1, size(resulttime, 1)) + 1;
+%     % Tentukan node yang ditinggalkan oleh head cluster
+%     nodesDitinggalkan = originalHeadClusterIndex(originalHeadClusterIndex ~= newHeadClusterIndex);
+% 
+%     for i = 1:size(resulttime, 1)
+%         if i == newHeadClusterIndex
+%             figure(2);
+%             scatter(resulttime.x(i), resulttime.y(i), 100, 'g', 'X', 'LineWidth', 1.5);
+%         elseif strcmp(resulttime.color{i}, 'red') || strcmp(resulttime.color{i}, 'Malicious')
+%             figure(2);
+%             scatter(resulttime.x(i), resulttime.y(i), 64, 'r', 'filled'); 
+%         elseif ~any(i == nodesDitinggalkan)
+%             figure(2);
+%             scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
+%         else
+%             figure(2);
+%             scatter(resulttime.x(i), resulttime.y(i), 64, 'b', 'filled');
+%         end
+% 
+%         % Menggambar koneksi antar node
+%         for i = 1:size(resulttime.koneksi, 1)
+%             for j = i+1:size(resulttime.koneksi, 2)
+%                 if resulttime.koneksi(i, j) == 1 && ~strcmp(resulttime.color{i}, 'red') && ~strcmp(resulttime.color{j}, 'red')
+%                     figure(2);
+%                     plot([resulttime.x(i), resulttime.x(j)], [resulttime.y(i), resulttime.y(j)], 'b--', 'LineWidth', 1);
+%                 end
+%             end
+%         end
+%     end
 
     % Menambahkan legenda untuk figure kedua
     figure(2);
@@ -448,10 +480,12 @@ for t_idx = 1:20
     Throughput2 = paket_diterima_2 ./ max(waktu_pengiriman_2, 1);
     
     % Menyimpan hasil perhitungan delay dan throughput
-    delay1(t_idx) = Delay1;
+%     delay1(t_idx) = Delay1;
+    delay1(t_idx) = mean(Delay1);
     throughput1(t_idx) = mean(Throughput1); % Menggunakan mean untuk mendapatkan nilai rata-rata jika ada beberapa elemen
     
-    delay2(t_idx) = Delay2;
+%     delay2(t_idx) = Delay2;
+    delay2(t_idx) = mean(Delay2);
     throughput2(t_idx) = mean(Throughput2); % Menggunakan mean untuk mendapatkan nilai rata-rata jika ada beberapa elemen
 
     % Plot delay
@@ -473,192 +507,192 @@ for t_idx = 1:20
     hold off;
 
     % Menunggu sebelum beralih ke iterasi berikutnya
-    pause(4.00);
+    pause(8.00);
 end
 
 hold off;
 
-% % Mengambil jumlah unik dari kolom 'sequence' dalam tabel 'result' untuk mendapatkan jumlah node
-% numNodes = height(unique(result.sequence));
-% 
-% % Inisialisasi AODV
-% status = repmat('?', 1, numNodes);
-% dist = inf(1, numNodes);
-% next = zeros(1, numNodes);
-% 
-% % Inisialisasi status, dist, dan next
-% for i = 1:numNodes
-%     if i == 1
-%         status(i) = '!';
-%         dist(i) = 0;
-%         next(i) = 0;
-%     else
-%         status(i) = '?';
-%         % Gunakan hasil perhitungan jarak dari tabel result
-%         dist(i) = result.d(i);
-%         next(i) = 1;
-%     end
-% end
-% 
-% % Inisialisasi variabel lainnya
-% flag = 0;
-% temp = 0;
-% 
-% % Set goalNode
-% goalNode = 1; % Sesuaikan dengan node tujuan
-% 
-% % Inisialisasi variabel untuk melacak node yang menginisiasi RREQ dan menerima RREP
-% initiatedRREQ = false(1, numNodes);
-% receivedRREP = false(1, numNodes);
-% 
-% % Initialize pingResults cell array to store ping information
-% % pingResults = {};
-% % pingResults = cell(numNodes, numNodes);
-% pingResults = cell(numNodes,numNodes); % Inisialisasi dengan sel kosong sebanyak numNodes*numNodes
-% 
-% % Main loop untuk routing AODV
-% while flag ~= 1 && temp < numNodes
-%     temp = temp + 1; % Increment iterasi
-% 
-%     % Pilih node dengan dist terkecil dan status '?'
-%     [minDist, vert] = min(dist(status == '?'));
-% 
-%     % Perbarui status
-%     status(vert) = '!';
-% 
-%     % Perbarui dist dan next untuk node tetangga
-%     for i = 1:numNodes
-%         if status(i) == '?' && dist(i) > dist(vert) + sqrt((result.x(vert) - result.x(i))^2 + (result.y(vert) - result.y(i))^2)
-%             dist(i) = dist(vert) + sqrt((result.x(vert) - result.x(i))^2 + (result.y(vert) - result.y(i))^2);
-%             next(i) = vert;
-% 
-%             % Log RREQ
-%             disp(['Node ' num2str(vert) ' sends RREQ message to node ' num2str(i)]);
-% 
-%             % Simulasikan penerimaan RREP atau timeout berdasarkan proses aktual
-%             if receivedRREP(vert) % Jika RREP diterima
-%                 % Simpan hasil timeout
-%                 pingResults{vert, i} = ['Node ' num2str(vert) ' to Node ' num2str(i) ': Ping: timeout']; % Set status timeout
-%             else
-%                 % Simpan hasil ping
-%                 pingResults{vert, i} = ['Node ' num2str(vert) ' to Node ' num2str(i) ': Ping: 100']; % Set status ping
-%                 % Update variabel untuk melacak node yang menginisiasi RREQ dan menerima RREP
-%                 initiatedRREQ(vert) = true;
-%             end
-% 
-%             % Log RREP
-%             disp(['Node ' num2str(i) ' sends RREP message to node ' num2str(vert)]);
-%             receivedRREP(i) = true;
-%         end
-%     end
-% 
-%     % Periksa apakah semua node ditandai sebagai '!'
-%     if all(status == '!')
-%         flag = 1;
-%         break;
-%     end
-% end
-% 
-% disp('Ping Results:');
-% for i = 1:numNodes
-%     for j = 1:numNodes
-%         if ~isempty(pingResults{i, j})
-%             disp(pingResults{i, j});
-%         end
-%     end
-% end
-% 
-% % Inisialisasi variabel untuk menyimpan rute
-% i = goalNode; % Ganti dengan goalNode
-% count = 1;
-% route(count) = goalNode;
-% 
-% % Bangun rute dari node terakhir ke node pertama
-% while next(i) ~= 0 % Ganti dengan node awal
-%     count = count + 1;
-%     route(count) = next(i);
-%     i = next(i);
-% end
-% 
-% % Tampilkan hasil rute
-% disp('AODV Route:');
-% disp(route);
-% 
-% % Inisialisasi daftar sensor berbahaya
-% M = {};
-% 
-% % Iterasi untuk setiap time step 
-% for t = 1:99
-%     % Ambil tabel hasil untuk time step saat ini dan berikutnya dari dalam cell array
-%     resultTableTimeCurrent = group.ResultTime{t};
-%     resultTableTimeNext = group.ResultTime{t + 1};
-%     
-%     % Ambil nilai unik dari kolom 'id' pada time step saat ini dan berikutnya
-%     uniqueIdsNAk = unique(resultTableTimeCurrent.sequence);
-%     uniqueIdsNBk = unique(resultTableTimeNext.sequence);
-%     NAk = cellstr(uniqueIdsNAk);
-%     NBk = cellstr(uniqueIdsNBk);
-%     
-%     % Inisialisasi tabel lingkungan tetangga hop pertama untuk setiap node A pada waktu t
-%     neighborListNAk = containers.Map('KeyType', 'char', 'ValueType', 'any');
-%     % Inisialisasi tabel lingkungan hop pertama untuk setiap node B pada waktu t+1
-%     neighborListNBk = containers.Map('KeyType', 'char', 'ValueType', 'any');
-%     
-%     % Bangun tabel lingkungan tetangga hop pertama untuk setiap node A pada waktu t
-%     for i = 1:numel(NAk)
-%         A = NAk{i};
-%         % Cari tetangga untuk node A pada waktu t
-%         neighborsA = findNeighbor(A, resultTableTimeCurrent);
-%         neighborListNAk(A) = neighborsA;
-%     end
-%     
-%     % Bangun tabel lingkungan hop pertama untuk setiap node B pada waktu t+1
-%     for i = 1:numel(NBk)
-%         B = NBk{i};
-%         % Cari tetangga untuk node B pada waktu t+1
-%         neighborsB = findNeighbor(B, resultTableTimeNext);
-%         neighborListNBk(B) = neighborsB;
-%     end
-% 
-%     % Iterasi untuk setiap node A dan node B yang berdekatan
-%     for i = 1:numel(NAk)
-%         A = NAk{i};
-%         for j = 1:numel(NBk)
-%             B = NBk{j};
-%     
-%             % Memeriksa interseksi antara N(A)1 dan N(B)1
-%             if any(ismember(neighborListNAk(A), NBk{j})) || any(ismember(neighborListNBk(B), NBk{j}))
-%                 % Jika N(A)1 ∩ N(B)1 maka anggap sebagai sah
-%                 disp('Sah');
-%             elseif any(ismember(neighborListNAk(A), NBk{j})) || any(ismember(neighborListNBk(B), union(NAk{i}, NBk{j})))
-%                 % Jika N(A)1 ∩ N(B)2 maka anggap sebagai sah
-%                 disp('Sah');
-%             else
-%                 % Periksa apakah ada node berwarna merah di waktu sekarang atau berikutnya
-%                 if (any(strcmp(resultTableTimeCurrent.color(strcmp(resultTableTimeCurrent.sequence, A)), 'red')) || ...
-%                     any(strcmp(resultTableTimeNext.color(strcmp(resultTableTimeNext.sequence, A)), 'red'))) && ...
-%                    (any(strcmp(resultTableTimeCurrent.color(strcmp(resultTableTimeCurrent.sequence, B)), 'red')) || ...
-%                     any(strcmp(resultTableTimeNext.color(strcmp(resultTableTimeNext.sequence, B)), 'red')))
-%                     % Jika ya, tambahkan A dan B ke dalam M
-%                     M = [M, A, B];
-%                 end
-%             end
-%         end
-%     end
-% end
-% 
-% % Tampilkan hasil
-% disp('Daftar sensor berbahaya:');
-% disp(M);
-% 
-% % Fungsi untuk mencari tetangga suatu node pada suatu waktu
-% function neighbors = findNeighbor(nodeId, resultTable)
-%     % Filter hasil untuk node yang sesuai
-%     nodeResult = resultTable(resultTable.sequence == nodeId, :);
-%     % Ambil tetangga dari hasil
-%     if ~isempty(nodeResult) && ismember('neighbor', resultTable.Properties.VariableNames)
-%         neighbors = unique(nodeResult.neighbor);
-%     else
-%         neighbors = [];
-%     end
-% end
+% Mengambil jumlah unik dari kolom 'sequence' dalam tabel 'result' untuk mendapatkan jumlah node
+numNodes = height(unique(result.sequence));
+
+% Inisialisasi AODV
+status = repmat('?', 1, numNodes);
+dist = inf(1, numNodes);
+next = zeros(1, numNodes);
+
+% Inisialisasi status, dist, dan next
+for i = 1:numNodes
+    if i == 1
+        status(i) = '!';
+        dist(i) = 0;
+        next(i) = 0;
+    else
+        status(i) = '?';
+        % Gunakan hasil perhitungan jarak dari tabel result
+        dist(i) = result.d(i);
+        next(i) = 1;
+    end
+end
+
+% Inisialisasi variabel lainnya
+flag = 0;
+temp = 0;
+
+% Set goalNode
+goalNode = 1; % Sesuaikan dengan node tujuan
+
+% Inisialisasi variabel untuk melacak node yang menginisiasi RREQ dan menerima RREP
+initiatedRREQ = false(1, numNodes);
+receivedRREP = false(1, numNodes);
+
+% Initialize pingResults cell array to store ping information
+% pingResults = {};
+% pingResults = cell(numNodes, numNodes);
+pingResults = cell(numNodes,numNodes); % Inisialisasi dengan sel kosong sebanyak numNodes*numNodes
+
+% Main loop untuk routing AODV
+while flag ~= 1 && temp < numNodes
+    temp = temp + 1; % Increment iterasi
+
+    % Pilih node dengan dist terkecil dan status '?'
+    [minDist, vert] = min(dist(status == '?'));
+
+    % Perbarui status
+    status(vert) = '!';
+
+    % Perbarui dist dan next untuk node tetangga
+    for i = 1:numNodes
+        if status(i) == '?' && dist(i) > dist(vert) + sqrt((result.x(vert) - result.x(i))^2 + (result.y(vert) - result.y(i))^2)
+            dist(i) = dist(vert) + sqrt((result.x(vert) - result.x(i))^2 + (result.y(vert) - result.y(i))^2);
+            next(i) = vert;
+
+            % Log RREQ
+            disp(['Node ' num2str(vert) ' sends RREQ message to node ' num2str(i)]);
+
+            % Simulasikan penerimaan RREP atau timeout berdasarkan proses aktual
+            if receivedRREP(vert) % Jika RREP diterima
+                % Simpan hasil timeout
+                pingResults{vert, i} = ['Node ' num2str(vert) ' to Node ' num2str(i) ': Ping: timeout']; % Set status timeout
+            else
+                % Simpan hasil ping
+                pingResults{vert, i} = ['Node ' num2str(vert) ' to Node ' num2str(i) ': Ping: 100']; % Set status ping
+                % Update variabel untuk melacak node yang menginisiasi RREQ dan menerima RREP
+                initiatedRREQ(vert) = true;
+            end
+
+            % Log RREP
+            disp(['Node ' num2str(i) ' sends RREP message to node ' num2str(vert)]);
+            receivedRREP(i) = true;
+        end
+    end
+
+    % Periksa apakah semua node ditandai sebagai '!'
+    if all(status == '!')
+        flag = 1;
+        break;
+    end
+end
+
+disp('Ping Results:');
+for i = 1:numNodes
+    for j = 1:numNodes
+        if ~isempty(pingResults{i, j})
+            disp(pingResults{i, j});
+        end
+    end
+end
+
+% Inisialisasi variabel untuk menyimpan rute
+i = goalNode; % Ganti dengan goalNode
+count = 1;
+route(count) = goalNode;
+
+% Bangun rute dari node terakhir ke node pertama
+while next(i) ~= 0 % Ganti dengan node awal
+    count = count + 1;
+    route(count) = next(i);
+    i = next(i);
+end
+
+% Tampilkan hasil rute
+disp('AODV Route:');
+disp(route);
+
+% Inisialisasi daftar sensor berbahaya
+M = {};
+
+% Iterasi untuk setiap time step 
+for t = 1:99
+    % Ambil tabel hasil untuk time step saat ini dan berikutnya dari dalam cell array
+    resultTableTimeCurrent = group.ResultTime{t};
+    resultTableTimeNext = group.ResultTime{t + 1};
+    
+    % Ambil nilai unik dari kolom 'id' pada time step saat ini dan berikutnya
+    uniqueIdsNAk = unique(resultTableTimeCurrent.sequence);
+    uniqueIdsNBk = unique(resultTableTimeNext.sequence);
+    NAk = cellstr(uniqueIdsNAk);
+    NBk = cellstr(uniqueIdsNBk);
+    
+    % Inisialisasi tabel lingkungan tetangga hop pertama untuk setiap node A pada waktu t
+    neighborListNAk = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    % Inisialisasi tabel lingkungan hop pertama untuk setiap node B pada waktu t+1
+    neighborListNBk = containers.Map('KeyType', 'char', 'ValueType', 'any');
+    
+    % Bangun tabel lingkungan tetangga hop pertama untuk setiap node A pada waktu t
+    for i = 1:numel(NAk)
+        A = NAk{i};
+        % Cari tetangga untuk node A pada waktu t
+        neighborsA = findNeighbor(A, resultTableTimeCurrent);
+        neighborListNAk(A) = neighborsA;
+    end
+    
+    % Bangun tabel lingkungan hop pertama untuk setiap node B pada waktu t+1
+    for i = 1:numel(NBk)
+        B = NBk{i};
+        % Cari tetangga untuk node B pada waktu t+1
+        neighborsB = findNeighbor(B, resultTableTimeNext);
+        neighborListNBk(B) = neighborsB;
+    end
+
+    % Iterasi untuk setiap node A dan node B yang berdekatan
+    for i = 1:numel(NAk)
+        A = NAk{i};
+        for j = 1:numel(NBk)
+            B = NBk{j};
+    
+            % Memeriksa interseksi antara N(A)1 dan N(B)1
+            if any(ismember(neighborListNAk(A), NBk{j})) || any(ismember(neighborListNBk(B), NBk{j}))
+                % Jika N(A)1 ∩ N(B)1 maka anggap sebagai sah
+                disp('Sah');
+            elseif any(ismember(neighborListNAk(A), NBk{j})) || any(ismember(neighborListNBk(B), union(NAk{i}, NBk{j})))
+                % Jika N(A)1 ∩ N(B)2 maka anggap sebagai sah
+                disp('Sah');
+            else
+                % Periksa apakah ada node berwarna merah di waktu sekarang atau berikutnya
+                if (any(strcmp(resultTableTimeCurrent.color(strcmp(resultTableTimeCurrent.sequence, A)), 'red')) || ...
+                    any(strcmp(resultTableTimeNext.color(strcmp(resultTableTimeNext.sequence, A)), 'red'))) && ...
+                   (any(strcmp(resultTableTimeCurrent.color(strcmp(resultTableTimeCurrent.sequence, B)), 'red')) || ...
+                    any(strcmp(resultTableTimeNext.color(strcmp(resultTableTimeNext.sequence, B)), 'red')))
+                    % Jika ya, tambahkan A dan B ke dalam M
+                    M = [M, A, B];
+                end
+            end
+        end
+    end
+end
+
+% Tampilkan hasil
+disp('Daftar sensor berbahaya:');
+disp(M);
+
+% Fungsi untuk mencari tetangga suatu node pada suatu waktu
+function neighbors = findNeighbor(nodeId, resultTable)
+    % Filter hasil untuk node yang sesuai
+    nodeResult = resultTable(resultTable.sequence == nodeId, :);
+    % Ambil tetangga dari hasil
+    if ~isempty(nodeResult) && ismember('neighbor', resultTable.Properties.VariableNames)
+        neighbors = unique(nodeResult.neighbor);
+    else
+        neighbors = [];
+    end
+end
